@@ -1,8 +1,8 @@
 const fs = require('fs/promises');
 const path = require('path');
 
-const CONFIG_PATH = path.join(__dirname, 'src', 'config', 'pdf-schedule.json');
 const API_URL = 'http://localhost:3000/api/pdf';
+const ORGS = ['officemate', 'tracthai'];
 
 function matchesCron(cronStr, date) {
   const parts = cronStr.split(/\s+/);
@@ -36,37 +36,57 @@ async function checkAndTrigger() {
   // Prevent multiple triggers in the same minute
   if (currentMinute === lastTriggeredMinute) return;
 
-  try {
-    const data = await fs.readFile(CONFIG_PATH, 'utf-8');
-    const config = JSON.parse(data);
+  let triggeredAny = false;
 
-    if (!config.enabled) return;
-
-    if (matchesCron(config.cron, now)) {
-      lastTriggeredMinute = currentMinute;
-      console.log(`[${now.toLocaleTimeString('th-TH')}] 🕒 Cron match found: "${config.cron}". Triggering PDF report send...`);
-
-      const response = await fetch(API_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({}) // Empty body triggers sending using saved config
-      });
-
-      const result = await response.json();
-      if (response.ok && result.success) {
-        console.log(`[${now.toLocaleTimeString('th-TH')}] ✅ Report sent successfully! File: ${result.fileName}`);
-      } else {
-        console.error(`[${now.toLocaleTimeString('th-TH')}] ❌ Failed to send report:`, result.error || response.statusText);
+  for (const org of ORGS) {
+    const configPath = path.join(__dirname, 'src', 'config', `pdf-schedule-${org}.json`);
+    try {
+      let data;
+      try {
+        data = await fs.readFile(configPath, 'utf-8');
+      } catch (e) {
+        // Fallback for officemate if the scoped file doesn't exist yet
+        if (org === 'officemate') {
+          const fallbackPath = path.join(__dirname, 'src', 'config', 'pdf-schedule.json');
+          data = await fs.readFile(fallbackPath, 'utf-8');
+        } else {
+          continue; // Skip if no config for this org
+        }
       }
+
+      const config = JSON.parse(data);
+      if (!config.enabled) continue;
+
+      if (matchesCron(config.cron, now)) {
+        console.log(`[${now.toLocaleTimeString('th-TH')}] 🕒 Cron match found for "${org}": "${config.cron}". Triggering PDF report send...`);
+
+        const response = await fetch(API_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ org }) // Explicitly scope the PDF dispatch to the matched organization
+        });
+
+        const result = await response.json();
+        if (response.ok && result.success) {
+          console.log(`[${now.toLocaleTimeString('th-TH')}] ✅ Report for "${org}" sent successfully! File: ${result.fileName}`);
+          triggeredAny = true;
+        } else {
+          console.error(`[${now.toLocaleTimeString('th-TH')}] ❌ Failed to send report for "${org}":`, result.error || response.statusText);
+        }
+      }
+    } catch (err) {
+      console.error(`[${now.toLocaleTimeString('th-TH')}] ❌ Scheduler error for "${org}":`, err.message);
     }
-  } catch (err) {
-    console.error(`[${now.toLocaleTimeString('th-TH')}] ❌ Scheduler error:`, err.message);
+  }
+
+  if (triggeredAny) {
+    lastTriggeredMinute = currentMinute;
   }
 }
 
 console.log('🚀 NinjaOne Report Scheduler Daemon started!');
-console.log(`Watching configuration: ${CONFIG_PATH}`);
 console.log(`Target endpoint: ${API_URL}`);
+console.log('Orgs monitored: ' + ORGS.join(', '));
 console.log('Timezone: Asia/Bangkok');
 
 // Check every 10 seconds to catch minute changes reliably

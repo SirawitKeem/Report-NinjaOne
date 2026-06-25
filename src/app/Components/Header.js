@@ -1,13 +1,17 @@
 import React from 'react';
+import { getActiveOrg } from '../lib/ninjaClient';
 
 function Header({ title = 'Asset Summary', subtitle = 'Top 10 Devices' }) {
+  const activeOrg = getActiveOrg();
+  const orgName = activeOrg === 'tracthai' ? 'TracThai' : 'OfficeMate';
+
   return (
     <div className="relative flex items-center pt-6 pb-2 w-full overflow-hidden">
 
       <div className="flex items-center shrink-0">
         <img 
-          src="/officemate_logo.png" 
-          alt="Office Mate Logo" 
+          src={`/org/${activeOrg}/header_logo.png`} 
+          alt={`${orgName} Logo`} 
           className="h-14 w-auto object-contain"
         />
       </div>

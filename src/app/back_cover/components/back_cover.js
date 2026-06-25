@@ -1,7 +1,28 @@
 import React from 'react';
 import { Mail, Phone, Globe } from 'lucide-react';
+import { getActiveOrg } from '../../lib/ninjaClient';
+
+const orgBranding = {
+  officemate: {
+    logoAlt: "OfficeMate Logo",
+    email: "contact@officemate.co.th",
+    phone: "02-783-5555",
+    website: "https://www.ofm.co.th",
+    name: "OfficeMate"
+  },
+  tracthai: {
+    logoAlt: "TracThai Logo",
+    email: "support@tracthai.com",
+    phone: "02-123-4567",
+    website: "https://www.tracthai.com",
+    name: "TracThai"
+  }
+};
 
 export default function BackCoverPage() {
+  const activeOrg = getActiveOrg();
+  const branding = orgBranding[activeOrg] || orgBranding.officemate;
+
   // Format current date: e.g. "24 Jun, 2026"
   const dateStr = new Date().toLocaleDateString('en-US', {
     day: '2-digit',
@@ -17,12 +38,12 @@ export default function BackCoverPage() {
       {/* Top Right Logos */}
       <div className="flex items-center justify-end gap-6 shrink-0 mt-2 mr-2">
         <img 
-          src="/ofm.png" 
-          alt="OfficeMate Logo" 
+          src={`/org/${activeOrg}/cover_logo.png`} 
+          alt={branding.logoAlt} 
           className="h-12 w-auto object-contain"
         />
         <img 
-          src="/ninjaone.png" 
+          src="/org/shared/ninjaone.png" 
           alt="NinjaOne Logo" 
           className="h-10 w-auto object-contain translate-y-1.5"
         />
@@ -64,8 +85,8 @@ export default function BackCoverPage() {
             <div className="flex h-8 w-8 items-center justify-center rounded-full bg-white text-[#1A1A2E] shrink-0 shadow-md">
               <Mail className="h-4 w-4" />
             </div>
-            <span className="text-[15px]  text-slate-100">
-              contact@officemate.co.th
+            <span className="text-[15px] text-slate-100">
+              {branding.email}
             </span>
           </div>
 
@@ -75,7 +96,7 @@ export default function BackCoverPage() {
               <Phone className="h-4 w-4" />
             </div>
             <span className="text-[15px] text-slate-100">
-              02-783-5555
+              {branding.phone}
             </span>
           </div>
 
@@ -84,8 +105,8 @@ export default function BackCoverPage() {
             <div className="flex h-8 w-8 items-center justify-center rounded-full bg-white text-[#1A1A2E] shrink-0 shadow-md">
               <Globe className="h-4 w-4" />
             </div>
-            <span className="text-[15px]  text-slate-100">
-              https://www.ofm.co.th
+            <span className="text-[15px] text-slate-100">
+              {branding.website}
             </span>
           </div>
 

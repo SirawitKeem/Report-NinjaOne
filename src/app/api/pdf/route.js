@@ -3,12 +3,14 @@ import fs from 'fs/promises';
 import path from 'path';
 import {
   loadScheduleConfig,
+  getScheduleConfigPath,
   computeRange,
   buildTemplateVars,
   renderTemplate,
   toAddressList,
   convertNewlinesToBrs,
 } from '../../lib/reportConfig';
+import { orgStorage, getActiveOrg } from '../../lib/ninjaClient';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -77,7 +79,7 @@ async function sendGraphMail({ to, cc, subject, html, pdfBuffer, fileName }) {
   if (!response.ok) throw new Error(await response.text());
 }
 
-async function generateReportPdf() {
+async function generateReportPdf(orgKey) {
   let browser;
 
   try {
@@ -90,7 +92,10 @@ async function generateReportPdf() {
     await page.setDefaultTimeout(120000);
     await page.setDefaultNavigationTimeout(120000);
     await page.setViewport({ width: 1200, height: 1200 });
-    await page.goto(BASE_URL, { waitUntil: 'networkidle2', timeout: 120000 });
+    
+    // Explicitly pass the active organization key in the query parameter
+    const targetUrl = `${BASE_URL}/?org=${orgKey}`;
+    await page.goto(targetUrl, { waitUntil: 'networkidle2', timeout: 120000 });
     
     // ✅ รอให้โครงสร้างเนื้อหาของแต่ละหน้าเรนเดอร์สำเร็จ เพื่อแก้ปัญหาหน้า PDF ว่างเปล่า
     await page.waitForSelector('div.break-before-page', { timeout: 120000 });
@@ -119,78 +124,93 @@ async function parseJsonBody(request) {
   }
 }
 
-export async function GET() {
-  const config = await loadScheduleConfig();
-  const range = computeRange(config, TZ);
-  const vars = buildTemplateVars(config, range);
+export async function GET(request) {
+  const url = new URL(request.url);
+  // Resolve organization key from query params, cookies, or default
+  let orgKey = url.searchParams.get('org') || request.cookies?.get('active_org')?.value || 'officemate';
+  if (orgKey !== 'officemate' && orgKey !== 'tracthai') orgKey = 'officemate';
 
-  return new Response(
-    JSON.stringify({
-      config,
-      range,
-      preview: {
-        to: toAddressList(config.email?.to),
-        cc: toAddressList(config.email?.cc),
-        subject: renderTemplate(config.email?.subjectTemplate ?? '', vars),
-        body: renderTemplate(config.email?.bodyTemplate ?? '', vars),
-        fileName: renderTemplate(config.fileNameTemplate ?? 'report-{fromShort}-{untilShort}.pdf', vars),
-      },
-    }),
-    {
-      status: 200,
-      headers: { 'Content-Type': 'application/json' },
-    }
-  );
-}
-
-export async function POST(request) {
-  try {
+  return await orgStorage.run(orgKey, async () => {
     const config = await loadScheduleConfig();
-    const body = await parseJsonBody(request);
-
-    const mergedConfig = {
-      ...config,
-      ...body,
-      email: {
-        ...(config.email || {}),
-        ...(body.email || {}),
-      },
-    };
-
-    if (!mergedConfig.email?.to || (Array.isArray(mergedConfig.email.to) && !mergedConfig.email.to.length)) {
-      return new Response(JSON.stringify({ error: 'No recipient configured in schedule config or request body.' }), {
-        status: 400,
-        headers: { 'Content-Type': 'application/json' },
-      });
-    }
-
-    const range = computeRange(mergedConfig, TZ);
-    const vars = buildTemplateVars(mergedConfig, range);
-    const subject = renderTemplate(mergedConfig.email?.subjectTemplate ?? 'Scheduled report', vars);
-    const rawHtml = renderTemplate(mergedConfig.email?.bodyTemplate ?? '', vars);
-    const html = convertNewlinesToBrs(rawHtml);
-    const fileName = renderTemplate(mergedConfig.fileNameTemplate ?? 'report-{fromShort}-{untilShort}.pdf', vars);
-    
-    // Generate PDF
-    const pdfBuffer = await generateReportPdf();
-
-    // Send Mail
-    await sendGraphMail({
-      to: mergedConfig.email.to,
-      cc: mergedConfig.email.cc,
-      subject,
-      html,
-      pdfBuffer,
-      fileName,
-    });
+    const range = computeRange(config, TZ);
+    const vars = buildTemplateVars(config, range);
 
     return new Response(
-      JSON.stringify({ success: true, fileName }),
+      JSON.stringify({
+        config,
+        range,
+        preview: {
+          to: toAddressList(config.email?.to),
+          cc: toAddressList(config.email?.cc),
+          subject: renderTemplate(config.email?.subjectTemplate ?? '', vars),
+          body: renderTemplate(config.email?.bodyTemplate ?? '', vars),
+          fileName: renderTemplate(config.fileNameTemplate ?? 'report-{fromShort}-{untilShort}.pdf', vars),
+        },
+      }),
       {
         status: 200,
         headers: { 'Content-Type': 'application/json' },
       }
     );
+  });
+}
+
+export async function POST(request) {
+  try {
+    const body = await parseJsonBody(request);
+    const url = new URL(request.url);
+
+    // Resolve organization context: POST body first, then query param, then request cookie
+    let orgKey = body.org || url.searchParams.get('org') || request.cookies?.get('active_org')?.value || 'officemate';
+    if (orgKey !== 'officemate' && orgKey !== 'tracthai') orgKey = 'officemate';
+
+    return await orgStorage.run(orgKey, async () => {
+      const config = await loadScheduleConfig();
+
+      const mergedConfig = {
+        ...config,
+        ...body,
+        email: {
+          ...(config.email || {}),
+          ...(body.email || {}),
+        },
+      };
+
+      if (!mergedConfig.email?.to || (Array.isArray(mergedConfig.email.to) && !mergedConfig.email.to.length)) {
+        return new Response(JSON.stringify({ error: 'No recipient configured in schedule config or request body.' }), {
+          status: 400,
+          headers: { 'Content-Type': 'application/json' },
+        });
+      }
+
+      const range = computeRange(mergedConfig, TZ);
+      const vars = buildTemplateVars(mergedConfig, range);
+      const subject = renderTemplate(mergedConfig.email?.subjectTemplate ?? 'Scheduled report', vars);
+      const rawHtml = renderTemplate(mergedConfig.email?.bodyTemplate ?? '', vars);
+      const html = convertNewlinesToBrs(rawHtml);
+      const fileName = renderTemplate(mergedConfig.fileNameTemplate ?? 'report-{fromShort}-{untilShort}.pdf', vars);
+      
+      // Generate PDF matching target organization branding and content
+      const pdfBuffer = await generateReportPdf(orgKey);
+
+      // Send Mail
+      await sendGraphMail({
+        to: mergedConfig.email.to,
+        cc: mergedConfig.email.cc,
+        subject,
+        html,
+        pdfBuffer,
+        fileName,
+      });
+
+      return new Response(
+        JSON.stringify({ success: true, fileName }),
+        {
+          status: 200,
+          headers: { 'Content-Type': 'application/json' },
+        }
+      );
+    });
   } catch (error) {
     console.error("❌ POST Send Email Error:", error);
     return new Response(
@@ -205,39 +225,47 @@ export async function POST(request) {
 
 export async function PUT(request) {
   try {
-    const config = await loadScheduleConfig();
     const body = await parseJsonBody(request);
+    const url = new URL(request.url);
 
-    // Merge only schedule-related properties
-    const updatedConfig = {
-      ...config,
-      enabled: body.enabled !== undefined ? body.enabled : config.enabled,
-      cron: body.cron ?? config.cron,
-      dateRange: body.dateRange ?? config.dateRange,
-      timezone: body.timezone ?? config.timezone,
-      fileNameTemplate: body.fileNameTemplate ?? config.fileNameTemplate,
-      email: {
-        ...(config.email || {}),
-        ...(body.email || {}),
-      }
-    };
+    // Resolve organization context: PUT body first, then query param, then request cookie
+    let orgKey = body.org || url.searchParams.get('org') || request.cookies?.get('active_org')?.value || 'officemate';
+    if (orgKey !== 'officemate' && orgKey !== 'tracthai') orgKey = 'officemate';
 
-    const configPath = path.join(process.cwd(), 'src', 'config', 'pdf-schedule.json');
-    await fs.writeFile(configPath, JSON.stringify(updatedConfig, null, 2), 'utf-8');
+    return await orgStorage.run(orgKey, async () => {
+      const config = await loadScheduleConfig();
 
-    return new Response(
-      JSON.stringify({ success: true, config: updatedConfig }),
-      {
-        status: 200,
-        headers: { 'Content-Type': 'application/json' },
-      }
-    );
+      // Merge only schedule-related properties
+      const updatedConfig = {
+        ...config,
+        enabled: body.enabled !== undefined ? body.enabled : config.enabled,
+        cron: body.cron ?? config.cron,
+        dateRange: body.dateRange ?? config.dateRange,
+        timezone: body.timezone ?? config.timezone,
+        fileNameTemplate: body.fileNameTemplate ?? config.fileNameTemplate,
+        email: {
+          ...(config.email || {}),
+          ...(body.email || {}),
+        }
+      };
+
+      const configPath = getScheduleConfigPath();
+      await fs.writeFile(configPath, JSON.stringify(updatedConfig, null, 2), 'utf-8');
+
+      return new Response(
+        JSON.stringify({ success: true, config: updatedConfig }),
+        {
+          status: 200,
+          headers: { 'Content-Type': 'application/json' },
+        }
+      );
+    });
   } catch (error) {
     console.error("❌ PUT Schedule Config Error:", error);
     return new Response(
       JSON.stringify({ error: error.message }),
       {
-        status: 505,
+        status: 500,
         headers: { 'Content-Type': 'application/json' },
       }
     );

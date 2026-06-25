@@ -1,7 +1,11 @@
 import fs from 'fs/promises';
 import path from 'path';
+import { getActiveOrg } from './ninjaClient';
 
-const CONFIG_PATH = path.join(process.cwd(), 'src', 'config', 'pdf-schedule.json');
+export function getScheduleConfigPath() {
+  const org = getActiveOrg();
+  return path.join(process.cwd(), 'src', 'config', `pdf-schedule-${org}.json`);
+}
 
 function formatIsoDate(date) {
   return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
@@ -30,8 +34,33 @@ function normalizeDate(value, timeZone) {
 }
 
 export async function loadScheduleConfig() {
-  const payload = await fs.readFile(CONFIG_PATH, 'utf-8');
-  return JSON.parse(payload);
+  const configPath = getScheduleConfigPath();
+  try {
+    const payload = await fs.readFile(configPath, 'utf-8');
+    return JSON.parse(payload);
+  } catch (e) {
+    // If the org-specific configuration does not exist, try to load the fallback
+    const fallbackPath = path.join(process.cwd(), 'src', 'config', 'pdf-schedule.json');
+    try {
+      const payload = await fs.readFile(fallbackPath, 'utf-8');
+      return JSON.parse(payload);
+    } catch (err) {
+      // Return a blank default template configuration
+      return {
+        enabled: false,
+        cron: "0 8 1 * *",
+        timezone: "Asia/Bangkok",
+        dateRange: "monthly",
+        fileNameTemplate: "report-{fromShort}-{untilShort}.pdf",
+        email: {
+          to: [],
+          cc: [],
+          subjectTemplate: "NinjaOne Monthly Report",
+          bodyTemplate: "Dear Team,\n\nPlease find attached the monthly report."
+        }
+      };
+    }
+  }
 }
 
 export function computeRange(config = {}, timeZone = 'UTC') {

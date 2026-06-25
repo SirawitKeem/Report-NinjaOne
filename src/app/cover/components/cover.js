@@ -1,6 +1,10 @@
 import React from 'react';
+import { getActiveOrg } from '../../lib/ninjaClient';
 
 export default function CoverPage() {
+  const activeOrg = getActiveOrg();
+  const orgName = activeOrg === 'tracthai' ? 'TracThai' : 'OfficeMate';
+
   // Format current date: e.g. "24 Jun, 2026"
   const dateStr = new Date().toLocaleDateString('en-US', {
     day: '2-digit',
@@ -13,17 +17,17 @@ export default function CoverPage() {
   return (
     <div className="flex flex-col h-[1150px] w-[794px] overflow-hidden p-14 bg-white shadow-[0_0_10px_rgba(0,0,0,0.1)] break-before-page bg-[url('/bg.jpg')] bg-cover bg-[position:40%_50%] bg-no-repeat mt-5 mb-5 relative text-white font-sans">
       
-      {/* Top Right Logos (OfficeMate and NinjaOne, no Power BI) */}
+      {/* Top Right Logos (OfficeMate or TracThai, and NinjaOne) */}
       <div className="flex items-center justify-end gap-6 shrink-0 mt-2 mr-2">
         <img 
-          src="/ofm.png" 
-          alt="OfficeMate Logo" 
+          src={`/org/${activeOrg}/cover_logo.png`} 
+          alt={`${orgName} Logo`} 
           className="h-12 w-auto object-contain"
         />
         <img 
-          src="/ninjaone.png" 
+          src="/org/shared/ninjaone.png" 
           alt="NinjaOne Logo" 
-          className="h-10 w-auto object-contain translate-y-1.5 "
+          className="h-10 w-auto object-contain translate-y-1.5"
         />
       </div>
 

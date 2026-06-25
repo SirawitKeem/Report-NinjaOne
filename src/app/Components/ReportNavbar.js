@@ -6,13 +6,50 @@ import {
   Sliders, UserPlus, Info, Copy, Eye, Send, Play, Bold, Italic, Underline, List, ListOrdered, Link, Globe
 } from 'lucide-react';
 
-export default function ReportNavbar() {
+export default function ReportNavbar({ activeOrg = 'officemate' }) {
   const [loading, setLoading] = useState(false);
   const [modalOpen, setModalOpen] = useState(false);
   const [activeTab, setActiveTab] = useState('email'); // 'email' or 'schedule'
   const [toast, setToast] = useState(null);
   const [previewOpen, setPreviewOpen] = useState(false);
   const [insertTagDropdownOpen, setInsertTagDropdownOpen] = useState(false);
+
+  const handleOrgChange = (newOrg) => {
+    document.cookie = `active_org=${newOrg}; path=/; max-age=${60 * 60 * 24 * 365}; SameSite=Lax`;
+    window.location.href = `/?org=${newOrg}`;
+  };
+
+  const handleLogoUpload = async (e, type) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setLoading(true);
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('org', activeOrg);
+    formData.append('type', type);
+
+    try {
+      const res = await fetch('/api/upload', {
+        method: 'POST',
+        body: formData
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        showToast(`Logo uploaded successfully! Refreshing page...`, 'success');
+        setTimeout(() => {
+          window.location.reload();
+        }, 1500);
+      } else {
+        throw new Error(data.error || 'Upload failed');
+      }
+    } catch (err) {
+      console.error('Error uploading logo:', err);
+      showToast(err.message || 'Failed to upload logo image.', 'error');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   // Email Config State
   const [emailConfig, setEmailConfig] = useState({
@@ -167,7 +204,7 @@ export default function ReportNavbar() {
   useEffect(() => {
     async function loadConfig() {
       try {
-        const res = await fetch('/api/pdf');
+        const res = await fetch(`/api/pdf?org=${activeOrg}`);
         if (res.ok) {
           const data = await res.json();
           const rawConfig = data.config || {};
@@ -222,10 +259,11 @@ export default function ReportNavbar() {
   const handleSendEmailImmediate = async () => {
     setLoading(true);
     try {
-      const res = await fetch('/api/pdf', {
+      const res = await fetch(`/api/pdf?org=${activeOrg}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
+          org: activeOrg,
           email: {
             to: emailConfig.to,
             cc: emailConfig.cc,
@@ -275,10 +313,11 @@ export default function ReportNavbar() {
       else if (scheduleConfig.frequency === 'quarterly') computedRange = 'quarterly';
       else if (scheduleConfig.frequency === 'yearly') computedRange = 'yearly';
 
-      const res = await fetch('/api/pdf', {
+      const res = await fetch(`/api/pdf?org=${activeOrg}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
+          org: activeOrg,
           enabled: scheduleConfig.enabled,
           cron: cronStr,
           dateRange: computedRange,
@@ -480,6 +519,19 @@ export default function ReportNavbar() {
               NinjaOne Asset Summary
             </h1>
           </div>
+
+          {/* Dynamic Org Switcher dropdown */}
+          <div className="ml-4 flex items-center relative">
+            <div className="h-6 w-px bg-slate-200 mr-4"></div>
+            <select
+              value={activeOrg}
+              onChange={(e) => handleOrgChange(e.target.value)}
+              className="bg-slate-50 border border-slate-200 rounded-xl px-3 py-1.5 text-xs font-bold text-slate-800 focus:outline-none focus:border-blue-500 transition-all cursor-pointer appearance-none pr-8 relative bg-[url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23475569%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E')] bg-[length:9px_9px] bg-[position:right_12px_center] bg-no-repeat"
+            >
+              <option value="officemate">🏢 OfficeMate</option>
+              <option value="tracthai">🛡️ TracThai</option>
+            </select>
+          </div>
         </div>
 
         {/* Action Controls */}
@@ -558,6 +610,14 @@ export default function ReportNavbar() {
               >
                 <Calendar className="h-4 w-4" />
                 <span>Automation Schedule</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setActiveTab('branding')}
+                className={`py-3.5 text-xs font-bold border-b-2 px-4 transition-all duration-200 cursor-pointer flex items-center gap-2.5 ${activeTab === 'branding' ? 'border-blue-600 text-blue-600' : 'border-transparent text-slate-500 hover:text-slate-800'}`}
+              >
+                <Globe className="h-4 w-4" />
+                <span>Branding & Logos</span>
               </button>
             </div>
 
@@ -992,9 +1052,72 @@ export default function ReportNavbar() {
                 </div>
               )}
 
+              {activeTab === 'branding' && (
+                <div className="p-6 flex flex-col gap-6 animate-fade-in">
+                  <h4 className="text-xs font-extrabold text-slate-950 uppercase tracking-wider">Tenant Assets</h4>
+                  <p className="text-[11px] text-slate-500 -mt-3.5">Upload PNG images to replace the logos for the current organization ({activeOrg === 'tracthai' ? 'TracThai' : 'OfficeMate'}).</p>
+                  
+                  {/* Header Logo Upload */}
+                  <div className="flex flex-col gap-2 p-4 bg-slate-50/50 border border-slate-200 rounded-2xl">
+                    <label className="text-[11px] font-bold text-slate-700">Header Logo (A4 Top-Left)</label>
+                    <div className="flex items-center gap-6 mt-1">
+                      <div className="h-16 w-28 bg-white border border-slate-200 rounded-xl flex items-center justify-center p-2 shadow-xs shrink-0 overflow-hidden">
+                        <img 
+                          src={`/org/${activeOrg}/header_logo.png?t=${Date.now()}`} 
+                          alt="Header Logo Preview" 
+                          className="max-h-full max-w-full object-contain"
+                        />
+                      </div>
+                      <div className="flex-1 flex flex-col gap-1.5">
+                        <input 
+                          type="file" 
+                          accept="image/png"
+                          onChange={(e) => handleLogoUpload(e, 'header_logo')}
+                          className="text-xs text-slate-500 file:mr-3 file:py-2 file:px-3 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 cursor-pointer"
+                        />
+                        <span className="text-[9.5px] text-slate-400">Supports PNG format. Recommended size: 240x80px.</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Cover Logo Upload */}
+                  <div className="flex flex-col gap-2 p-4 bg-slate-50/50 border border-slate-200 rounded-2xl">
+                    <label className="text-[11px] font-bold text-slate-700">Cover Logo (Cover & Back-Cover)</label>
+                    <div className="flex items-center gap-6 mt-1">
+                      <div className="h-16 w-28 bg-white border border-slate-200 rounded-xl flex items-center justify-center p-2 shadow-xs shrink-0 overflow-hidden">
+                        <img 
+                          src={`/org/${activeOrg}/cover_logo.png?t=${Date.now()}`} 
+                          alt="Cover Logo Preview" 
+                          className="max-h-full max-w-full object-contain"
+                        />
+                      </div>
+                      <div className="flex-1 flex flex-col gap-1.5">
+                        <input 
+                          type="file" 
+                          accept="image/png"
+                          onChange={(e) => handleLogoUpload(e, 'cover_logo')}
+                          className="text-xs text-slate-500 file:mr-3 file:py-2 file:px-3 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 cursor-pointer"
+                        />
+                        <span className="text-[9.5px] text-slate-400">Supports PNG format. Recommended size: 300x120px.</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
               {/* Action Buttons */}
               <div className="flex items-center justify-between border-t border-slate-100 px-6 py-4.5 bg-slate-50/50 mt-2">
-                {activeTab === 'email' ? (
+                {activeTab === 'branding' ? (
+                  <div className="flex-1 flex items-center justify-end gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setModalOpen(false)}
+                      className="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-xl cursor-pointer shadow-md transition-colors"
+                    >
+                      Done
+                    </button>
+                  </div>
+                ) : activeTab === 'email' ? (
                   <>
                     <button
                       type="button"

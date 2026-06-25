@@ -67,11 +67,14 @@ import CoverPage from './cover/components/cover'
 import BackCoverPage from './back_cover/components/back_cover'
 import Footer from './Components/Footer'
 import ReportNavbar from './Components/ReportNavbar'
+import { getActiveOrg } from './lib/ninjaClient'
 
 function page() {
+  const activeOrg = getActiveOrg();
+
   return (
     <div className="print-wrapper flex flex-col items-center justify-center bg-gray-900 min-h-screen">
-      <ReportNavbar />
+      <ReportNavbar activeOrg={activeOrg} />
       
             {/* Page 1: Cover Page */}
             <CoverPage />
