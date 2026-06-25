@@ -12,15 +12,89 @@
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
 
 body {
   background: var(--background);
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
+}
+
+/* --- Toast Animation --- */
+@keyframes slide-in {
+  from {
+    transform: translateY(1rem);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.animate-slide-in {
+  animation: slide-in 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* --- PDF Print Rules --- */
+@media print {
+  * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+    color-adjust: exact !important;
+    transition: none !important;
+    animation: none !important;
+    box-shadow: none !important; /* Force remove all shadows to prevent iOS black border bugs */
+    text-shadow: none !important;
+  }
+
+  .shadow-sm {
+    box-shadow: 1px 1px 0px 0px #e2e8f0 !important; /* Flat solid shadow offset that displays perfectly on iOS */
+  }
+
+  .no-print {
+    display: none !important;
+  }
+  
+  html, body {
+    background: white !important;
+    color: black !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    width: 210mm !important;
+    height: auto !important;
+  }
+
+  .print-wrapper {
+    background: white !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    display: block !important;
+    width: 100% !important;
+    height: auto !important;
+    min-height: 0 !important;
+  }
+
+  div.break-before-page {
+    width: 210mm !important;
+    height: 297mm !important;
+    margin: 0 !important;
+    box-shadow: none !important;
+    border: none !important;
+    break-inside: avoid !important;
+    break-before: page !important;
+    overflow: hidden !important;
+    background-color: white !important;
+    position: relative !important;
+    box-sizing: border-box !important;
+  }
+
+  /* Prevent blank page before the cover page */
+  div.break-before-page:first-of-type {
+    break-before: avoid !important;
+  }
+}
+
+@page {
+  size: A4 portrait;
+  margin: 0;
 }

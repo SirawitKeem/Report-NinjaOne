@@ -1,0 +1,17 @@
+{
+  "enabled": true,
+  "cron": "0 9 4 * *",
+  "timezone": "Asia/Bangkok",
+  "dateRange": "monthly",
+  "fileNameTemplate": "OfficeMate_NinjaOne_Report_{monthName}_{year}.pdf",
+  "email": {
+    "to": [
+      "noreply@tracthai.com"
+    ],
+    "cc": [
+      "sirawit.pec@gmail.com"
+    ],
+    "subjectTemplate": "NinjaOne Monthly Report - OfficeMate ({monthName} {year})",
+    "bodyTemplate": "Dear Khun Chayaphol,\n\nสวัสดีครับ\n\nบริษัท The Recovery Advisor Company Limited (TRACTHAI) ขอนำส่งรายงานสรุปผลการทำงานและสถานะภาพรวมของระบบ NinjaOne ประจำเดือน {monthNameThai} {yearThai} ตามไฟล์ที่แนบมาครับ\n\nรายงานฉบับนี้จัดทำขึ้นเพื่ออัปเดตข้อมูลการทำงานในแต่ละส่วน เพื่อให้ทาง OfficeMate ได้รับทราบถึงสถานะและประสิทธิภาพของระบบประจำเดือนครับ\n\nหากท่านตรวจสอบแล้วมีข้อสงสัย หรือต้องการข้อมูลส่วนใดเพิ่มเติม สามารถติดต่อทางทีมงานได้ตลอดเวลาครับ\n\nBest Regards,\n\nSurachai (noreply@tracthai.com)\n[Support Engineer]\nThe Recovery Advisor Company Limited (TRACTHAI)\nEmail: noreply@tracthai.com"
+  }
+}

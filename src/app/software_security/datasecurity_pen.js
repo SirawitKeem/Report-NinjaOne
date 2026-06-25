@@ -1,0 +1,1 @@
+export { normalizeImpact } from './securityConfig';
