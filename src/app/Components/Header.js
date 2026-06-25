@@ -1,8 +1,8 @@
 import React from 'react';
 import { getActiveOrg } from '../lib/ninjaClient';
 
-function Header({ title = 'Asset Summary', subtitle = 'Top 10 Devices' }) {
-  const activeOrg = getActiveOrg();
+async function Header({ title = 'Asset Summary', subtitle = 'Top 10 Devices' }) {
+  const activeOrg = await getActiveOrg();
   const orgName = activeOrg === 'tracthai' ? 'TracThai' : 'OfficeMate';
 
   return (

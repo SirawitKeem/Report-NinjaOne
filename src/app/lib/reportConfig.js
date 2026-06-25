@@ -2,8 +2,8 @@ import fs from 'fs/promises';
 import path from 'path';
 import { getActiveOrg } from './ninjaClient';
 
-export function getScheduleConfigPath() {
-  const org = getActiveOrg();
+export async function getScheduleConfigPath() {
+  const org = await getActiveOrg();
   return path.join(process.cwd(), 'src', 'config', `pdf-schedule-${org}.json`);
 }
 

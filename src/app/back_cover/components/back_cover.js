@@ -19,8 +19,8 @@ const orgBranding = {
   }
 };
 
-export default function BackCoverPage() {
-  const activeOrg = getActiveOrg();
+export default async function BackCoverPage() {
+  const activeOrg = await getActiveOrg();
   const branding = orgBranding[activeOrg] || orgBranding.officemate;
 
   // Format current date: e.g. "24 Jun, 2026"

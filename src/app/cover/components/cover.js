@@ -1,8 +1,8 @@
 import React from 'react';
 import { getActiveOrg } from '../../lib/ninjaClient';
 
-export default function CoverPage() {
-  const activeOrg = getActiveOrg();
+export default async function CoverPage() {
+  const activeOrg = await getActiveOrg();
   const orgName = activeOrg === 'tracthai' ? 'TracThai' : 'OfficeMate';
 
   // Format current date: e.g. "24 Jun, 2026"

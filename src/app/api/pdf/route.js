@@ -249,7 +249,7 @@ export async function PUT(request) {
         }
       };
 
-      const configPath = getScheduleConfigPath();
+      const configPath = await getScheduleConfigPath();
       await fs.writeFile(configPath, JSON.stringify(updatedConfig, null, 2), 'utf-8');
 
       return new Response(

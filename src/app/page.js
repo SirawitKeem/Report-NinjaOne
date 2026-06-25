@@ -69,8 +69,8 @@ import Footer from './Components/Footer'
 import ReportNavbar from './Components/ReportNavbar'
 import { getActiveOrg } from './lib/ninjaClient'
 
-function page() {
-  const activeOrg = getActiveOrg();
+async function page() {
+  const activeOrg = await getActiveOrg();
 
   return (
     <div className="print-wrapper flex flex-col items-center justify-center bg-gray-900 min-h-screen">

@@ -9,7 +9,7 @@ const CACHE_TTL_MS = 30000; // 30 seconds cache for identical requests
 export const orgStorage = new AsyncLocalStorage();
 
 // Helper to determine active organization key (officemate / tracthai)
-export function getActiveOrg() {
+export async function getActiveOrg() {
   // Check Node async context store first
   const storedOrg = orgStorage.getStore();
   if (storedOrg === 'officemate' || storedOrg === 'tracthai') {
@@ -18,7 +18,7 @@ export function getActiveOrg() {
 
   // Check request headers injected by middleware
   try {
-    const headerStore = headers();
+    const headerStore = await headers();
     const orgHeader = headerStore.get('x-active-org');
     if (orgHeader === 'officemate' || orgHeader === 'tracthai') {
       return orgHeader;
@@ -29,7 +29,7 @@ export function getActiveOrg() {
 
   // Check request cookies fallback
   try {
-    const cookieStore = cookies();
+    const cookieStore = await cookies();
     const orgCookie = cookieStore.get('active_org')?.value;
     if (orgCookie === 'officemate' || orgCookie === 'tracthai') {
       return orgCookie;
@@ -73,7 +73,7 @@ function getCacheState(org) {
 }
 
 export async function getAccessToken() {
-  const activeOrg = getActiveOrg();
+  const activeOrg = await getActiveOrg();
   const state = getCacheState(activeOrg);
   const now = Date.now();
 
@@ -141,7 +141,7 @@ export async function getAccessToken() {
 }
 
 export async function fetchFromNinja(endpoint, options = {}) {
-  const activeOrg = getActiveOrg();
+  const activeOrg = await getActiveOrg();
   const state = getCacheState(activeOrg);
 
   // Only cache GET requests
