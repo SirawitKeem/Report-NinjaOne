@@ -18,7 +18,7 @@ export const dynamic = 'force-dynamic';
 process.env.TZ = 'Asia/Bangkok';
 
 const TZ = 'Asia/Bangkok';
-const BASE_URL = process.env.PDF_BASE_URL || 'http://localhost:3000';
+const BASE_URL = process.env.PDF_BASE_URL || 'http://127.0.0.1:3000';
 
 async function getAccessToken() {
   const body = new URLSearchParams({

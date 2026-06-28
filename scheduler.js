@@ -1,7 +1,7 @@
 const fs = require('fs/promises');
 const path = require('path');
 
-const API_URL = 'http://localhost:3000/api/pdf';
+const API_URL = 'http://127.0.0.1:3000/api/pdf';
 const ORGS = ['officemate', 'tracthai'];
 
 function matchesCron(cronStr, date) {
