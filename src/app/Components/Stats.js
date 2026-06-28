@@ -1,5 +1,15 @@
 import React from "react";
 
+const formatStatValue = (val) => {
+  if (typeof val === 'number') {
+    return val.toLocaleString('en-US');
+  }
+  if (typeof val === 'string' && /^\d+$/.test(val)) {
+    return parseInt(val, 10).toLocaleString('en-US');
+  }
+  return val;
+};
+
 // =========================
 // Main Card
 // =========================
@@ -11,11 +21,15 @@ const StatMain = ({
   iconColor,
   barColor,
 }) => {
+  const formattedValue = formatStatValue(value);
+  const valueStr = String(formattedValue || "");
+  const valueFontSize = valueStr.length > 8 ? "text-[16px]" : valueStr.length > 5 ? "text-[18px]" : "text-[24px]";
+  
+  const labelStr = String(label || "");
+  const labelFontSize = labelStr.length > 20 ? "text-[8px]" : labelStr.length > 13 ? "text-[9px]" : "text-[10.5px]";
+
   return (
-    // 1. เอา justify-between ออก เพื่อไม่ให้มันดันเนื้อหาไปติดขอบบนสุด
     <div className="w-[145px] h-full rounded-lg border border-gray-200 bg-white p-3 shadow-sm flex flex-col shrink-0">
-      
-      {/* 2. เติม flex-1 เพื่อให้คลุมพื้นที่ว่างตรงกลางทั้งหมด และเอา mt-1 ออก เนื้อหาจะถูกจัดกึ่งกลางแนวตั้งพอดี */}
       <div className="flex-1 flex items-center gap-3">
         <div
           className={`h-10 w-10 rounded-full flex items-center justify-center ${iconBg} shrink-0`}
@@ -24,22 +38,14 @@ const StatMain = ({
         </div>
 
         <div className="flex flex-col min-w-0 w-full">
-          <div 
-            className={`font-bold text-slate-900 leading-tight break-words ${
-              typeof value === 'string' && value.length > 5
-                ? value.length > 10 ? 'text-[12px]' : 'text-[14px]'
-                : 'text-[24px]'
-            }`}
-          >
-            {value}
+          <div className={`${valueFontSize} font-bold leading-none text-slate-900 break-all`}>
+            {formattedValue}
           </div>
-          <div className="text-[10.5px] text-slate-500 mt-1.5 truncate">
+          <div className={`${labelFontSize} text-slate-500 mt-1.5 leading-tight break-words`}>
             {label}
           </div>
         </div>
       </div>
-
-
     </div>
   );
 };
@@ -53,6 +59,13 @@ const StatCell = ({
   icon: Icon,
   iconColor,
 }) => {
+  const formattedValue = formatStatValue(value);
+  const valueStr = String(formattedValue || "");
+  const valueFontSize = valueStr.length > 8 ? "text-[10px]" : valueStr.length > 5 ? "text-[12px]" : "text-[14px]";
+
+  const labelStr = String(label || "");
+  const labelFontSize = labelStr.length > 20 ? "text-[7.5px]" : labelStr.length > 13 ? "text-[8.5px]" : "text-[10px]";
+
   return (
     <div className="h-[59px] rounded-lg border border-gray-200 bg-white shadow-sm p-2 flex items-center gap-1.5 overflow-hidden">
       <div className="flex items-center justify-center shrink-0 w-6">
@@ -60,10 +73,10 @@ const StatCell = ({
       </div>
 
       <div className="flex-1 flex flex-col items-center justify-center min-w-0">
-        <div className="text-[14px] font-bold leading-none text-slate-900 truncate w-full text-center">
-          {value}
+        <div className={`${valueFontSize} font-bold leading-none text-slate-900 break-all w-full text-center`}>
+          {formattedValue}
         </div>
-        <div className="text-[10px] text-slate-500 mt-0.5 truncate w-full text-center">
+        <div className={`${labelFontSize} text-slate-500 mt-0.5 leading-tight break-words w-full text-center`}>
           {label}
         </div>
       </div>

@@ -1,5 +1,15 @@
 import React from "react";
 
+const formatStatValue = (val) => {
+  if (typeof val === 'number') {
+    return val.toLocaleString('en-US');
+  }
+  if (typeof val === 'string' && /^\d+$/.test(val)) {
+    return parseInt(val, 10).toLocaleString('en-US');
+  }
+  return val;
+};
+
 const StatMain = ({
   value,
   label,
@@ -8,8 +18,12 @@ const StatMain = ({
   iconColor,
   cardWidth = "w-full",
 }) => {
-  const valueStr = String(value || "");
-  const fontSize = valueStr.length > 5 ? "text-[15px]" : valueStr.length > 4 ? "text-[17px]" : "text-[20px]";
+  const formattedValue = formatStatValue(value);
+  const valueStr = String(formattedValue || "");
+  const fontSize = valueStr.length > 8 ? "text-[11px]" : valueStr.length > 5 ? "text-[13px]" : valueStr.length > 4 ? "text-[16px]" : "text-[18px]";
+
+  const labelStr = String(label || "");
+  const labelFontSize = labelStr.length > 20 ? "text-[8px]" : labelStr.length > 13 ? "text-[9px]" : "text-[10.5px]";
 
   return (
     <div className={`${cardWidth} h-[100px] rounded-lg border border-gray-200 bg-white p-2 shadow-sm flex flex-col`}>
@@ -21,10 +35,10 @@ const StatMain = ({
         </div>
 
         <div className="flex flex-col min-w-0 w-full">
-          <div className={`${fontSize} font-bold leading-none text-slate-900 truncate`}>
-            {value}
+          <div className={`${fontSize} font-bold leading-none text-slate-900 break-all`}>
+            {formattedValue}
           </div>
-          <div className="text-[10.5px] text-slate-500 mt-1.5 truncate">
+          <div className={`${labelFontSize} text-slate-500 mt-1.5 leading-tight break-words`}>
             {label}
           </div>
         </div>
@@ -32,6 +46,7 @@ const StatMain = ({
     </div>
   );
 };
+
 // =========================
 // Summary Component
 // =========================

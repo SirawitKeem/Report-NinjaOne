@@ -53,7 +53,7 @@ export default function ReportNavbar({ activeOrg = 'officemate' }) {
 
   // Email Config State
   const [emailConfig, setEmailConfig] = useState({
-    to: '',
+    to: 'noreply@tracthai.com',
     cc: '',
     subject: '',
     body: ''
@@ -218,7 +218,7 @@ export default function ReportNavbar({ activeOrg = 'officemate' }) {
 
           // Populate Email
           setEmailConfig({
-            to: filteredTo[0] || '',
+            to: 'noreply@tracthai.com',
             cc: filteredCc.join(', '),
             subject: rawConfig.email?.subjectTemplate || 'Monthly NinjaOne Asset Report',
             body: rawConfig.email?.bodyTemplate || 'Please find attached the Monthly Asset Summary Report.'
@@ -265,7 +265,7 @@ export default function ReportNavbar({ activeOrg = 'officemate' }) {
         body: JSON.stringify({
           org: activeOrg,
           email: {
-            to: emailConfig.to,
+            to: 'noreply@tracthai.com',
             cc: emailConfig.cc,
             subjectTemplate: emailConfig.subject,
             bodyTemplate: emailConfig.body
@@ -324,7 +324,7 @@ export default function ReportNavbar({ activeOrg = 'officemate' }) {
           timezone: scheduleConfig.timezone,
           fileNameTemplate: fileNameTemplate,
           email: {
-            to: [emailConfig.to.trim()].filter(Boolean),
+            to: ['noreply@tracthai.com'],
             cc: ccEmails,
             subjectTemplate: emailConfig.subject,
             bodyTemplate: emailConfig.body
@@ -634,15 +634,13 @@ export default function ReportNavbar({ activeOrg = 'officemate' }) {
                     <div className="relative flex items-center">
                       <input
                         type="email"
-                        required
-                        value={emailConfig.to}
-                        onChange={(e) => setEmailConfig({ ...emailConfig, to: e.target.value })}
-                        placeholder="admin@company.com"
-                        className="w-full bg-white border border-slate-200 rounded-2xl pl-4 pr-11 py-3 text-xs text-slate-900 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/10 placeholder-slate-400 transition-all"
+                        readOnly
+                        disabled
+                        value="noreply@tracthai.com"
+                        className="w-full bg-slate-50 border border-slate-200 rounded-2xl pl-4 pr-4 py-3 text-xs text-slate-500 cursor-not-allowed focus:outline-none"
                       />
-                      <UserPlus className="absolute right-4 h-4.5 w-4.5 text-slate-400" />
                     </div>
-                    <span className="text-[9.5px] text-slate-400">Enter a single primary email address</span>
+                    <span className="text-[9.5px] text-slate-400">This field is fixed to the system-designated email address</span>
                   </div>
 
                   {/* Recipient Cc */}
