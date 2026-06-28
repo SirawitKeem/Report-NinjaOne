@@ -447,6 +447,14 @@ export default function ReportNavbar({ activeOrg = 'officemate' }) {
     const currentDateThai = nowLocal.toLocaleDateString('th-TH', { day: 'numeric', month: 'long', year: 'numeric' });
     const currentDateShort = `${String(nowLocal.getDate()).padStart(2, '0')}/${String(nowLocal.getMonth() + 1).padStart(2, '0')}/${nowLocal.getFullYear()}`;
 
+    // Previous month parameters relative to current date
+    const prevMonthDate = new Date(nowLocal);
+    prevMonthDate.setMonth(prevMonthDate.getMonth() - 1);
+    const prevMonthName = prevMonthDate.toLocaleDateString('en-US', { month: 'long' });
+    const prevMonthNameThai = prevMonthDate.toLocaleDateString('th-TH', { month: 'long' });
+    const prevMonthYear = prevMonthDate.toLocaleDateString('en-US', { year: 'numeric' });
+    const prevMonthYearThai = String(prevMonthDate.getFullYear() + 543);
+
     return {
       from: formatIso(startDate),
       until: formatIso(endDate),
@@ -468,10 +476,18 @@ export default function ReportNavbar({ activeOrg = 'officemate' }) {
       currentDate,
       currentDateThai,
       currentDateShort,
+      prevMonthName,
+      prevMonthNameThai,
+      prevMonthYear,
+      prevMonthYearThai,
+      prevMonthNameYear: `${prevMonthName} ${prevMonthYear}`,
+      prevMonthNameYearThai: `${prevMonthNameThai} ${prevMonthYearThai}`,
       'Month Year': `${monthNameThai} ${yearThai}`,
       'MonthYear': `${monthName}${yearVal}`
     };
   };
+
+  const previewVars = getPreviewVariables();
 
   const convertNewlinesToBrs = (text) => {
     if (!text) return '';
@@ -672,10 +688,10 @@ export default function ReportNavbar({ activeOrg = 'officemate' }) {
                     <div className="flex flex-wrap gap-1.5 mt-1.5">
                       <span className="text-[9.5px] text-slate-400 w-full mb-0.5">Dynamic tags (click to insert):</span>
                       {[
-                        { key: '{monthNameThai}_{yearThai}', label: '{monthNameThai}_{yearThai}' },
-                        { key: '{monthName}_{year}', label: '{monthName}_{year}' },
-                        { key: '{currentMonthName}', label: '{currentMonthName}' },
-                        { key: '{currentDateShort}', label: '{currentDateShort}' }
+                        { key: '{monthNameThai}_{yearThai}', label: `เดือนรายงาน (ไทย) เช่น ${previewVars.monthNameThai}_${previewVars.yearThai}` },
+                        { key: '{prevMonthNameThai}_{prevMonthYearThai}', label: `เดือนก่อนหน้า (ไทย) เช่น ${previewVars.prevMonthNameThai}_${previewVars.prevMonthYearThai}` },
+                        { key: '{monthName}_{year}', label: `เดือนรายงาน (อังกฤษ) เช่น ${previewVars.monthName}_${previewVars.year}` },
+                        { key: '{currentDateShort}', label: `วันที่ปัจจุบัน (สั้น) เช่น ${previewVars.currentDateShort?.replace(/\//g, '_')}` }
                       ].map(tag => (
                         <button
                           key={tag.key}
@@ -735,11 +751,11 @@ export default function ReportNavbar({ activeOrg = 'officemate' }) {
                     <div className="flex flex-wrap gap-1.5 mt-1.5">
                       <span className="text-[9.5px] text-slate-400 w-full mb-0.5">Dynamic tags (click to insert):</span>
                       {[
-                        { key: '{monthNameThai} {yearThai}', label: '{monthNameThai} {yearThai}' },
-                        { key: '{monthName} {year}', label: '{monthName} {year}' },
-                        { key: '{currentMonthName}', label: '{currentMonthName}' },
-                        { key: '{currentDateThai}', label: '{currentDateThai}' },
-                        { key: '{currentDateShort}', label: '{currentDateShort}' }
+                        { key: '{monthNameThai} {yearThai}', label: `เดือนรายงาน (ไทย) - เช่น ${previewVars.monthNameThai} ${previewVars.yearThai}` },
+                        { key: '{prevMonthNameThai} {prevMonthYearThai}', label: `เดือนก่อนหน้า (ไทย) - เช่น ${previewVars.prevMonthNameThai} ${previewVars.prevMonthYearThai}` },
+                        { key: '{monthName} {year}', label: `เดือนรายงาน (อังกฤษ) - เช่น ${previewVars.monthName} ${previewVars.year}` },
+                        { key: '{currentDateThai}', label: `วันที่ปัจจุบัน (ไทยยาว) - เช่น ${previewVars.currentDateThai}` },
+                        { key: '{currentDateShort}', label: `วันที่ปัจจุบัน (สั้น) - เช่น ${previewVars.currentDateShort}` }
                       ].map(tag => (
                         <button
                           key={tag.key}
@@ -822,13 +838,14 @@ export default function ReportNavbar({ activeOrg = 'officemate' }) {
                             <span className="text-[8px]">▼</span>
                           </button>
                           {insertTagDropdownOpen && (
-                            <div className="absolute left-0 mt-1 z-30 w-52 bg-white border border-slate-200 rounded-xl shadow-xl py-1 text-xs text-slate-700 max-h-56 overflow-y-auto">
+                            <div className="absolute left-0 mt-1 z-30 w-80 bg-white border border-slate-200 rounded-xl shadow-xl py-1 text-xs text-slate-700 max-h-56 overflow-y-auto">
                               {[
-                                { tag: '{monthNameThai} {yearThai}', label: 'Report Month (Thai)' },
-                                { tag: '{monthName} {year}', label: 'Report Month (Eng)' },
-                                { tag: '{currentMonthName}', label: 'Current Month (Eng)' },
-                                { tag: '{currentDateThai}', label: 'Current Date (Thai)' },
-                                { tag: '{currentDateShort}', label: 'Current Date (Short)' }
+                                { tag: '{monthNameThai} {yearThai}', label: `เดือนรายงาน (ภาษาไทย) - เช่น ${previewVars.monthNameThai} ${previewVars.yearThai}` },
+                                { tag: '{prevMonthNameThai} {prevMonthYearThai}', label: `เดือนก่อนหน้า (ภาษาไทย) - เช่น ${previewVars.prevMonthNameThai} ${previewVars.prevMonthYearThai}` },
+                                { tag: '{monthName} {year}', label: `เดือนรายงาน (ภาษาอังกฤษ) - เช่น ${previewVars.monthName} ${previewVars.year}` },
+                                { tag: '{currentMonthName}', label: `เดือนปัจจุบัน (ภาษาอังกฤษ) - เช่น ${previewVars.currentMonthName}` },
+                                { tag: '{currentDateThai}', label: `วันที่ปัจจุบัน (ไทยยาว) - เช่น ${previewVars.currentDateThai}` },
+                                { tag: '{currentDateShort}', label: `วันที่ปัจจุบัน (สั้น) - เช่น ${previewVars.currentDateShort}` }
                               ].map(item => (
                                 <button
                                   key={item.tag}

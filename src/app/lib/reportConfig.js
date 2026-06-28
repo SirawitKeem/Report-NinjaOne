@@ -125,6 +125,15 @@ export function computeRange(config = {}, timeZone = 'UTC') {
   const currentDateThai = now.toLocaleDateString('th-TH', { day: 'numeric', month: 'long', year: 'numeric' });
   const currentDateShort = `${String(now.getDate()).padStart(2, '0')}/${String(now.getMonth() + 1).padStart(2, '0')}/${now.getFullYear()}`;
 
+  // Previous month date parameters relative to current execution date (now)
+  const prevMonthDate = new Date(now);
+  prevMonthDate.setMonth(prevMonthDate.getMonth() - 1);
+
+  const prevMonthName = prevMonthDate.toLocaleDateString('en-US', { month: 'long' });
+  const prevMonthNameThai = prevMonthDate.toLocaleDateString('th-TH', { month: 'long' });
+  const prevMonthYear = prevMonthDate.toLocaleDateString('en-US', { year: 'numeric' });
+  const prevMonthYearThai = String(prevMonthDate.getFullYear() + 543);
+
   return {
     from: formatIsoDate(startDate),
     until: formatIsoDate(endDate),
@@ -147,6 +156,12 @@ export function computeRange(config = {}, timeZone = 'UTC') {
     currentDate,
     currentDateThai,
     currentDateShort,
+    prevMonthName,
+    prevMonthNameThai,
+    prevMonthYear,
+    prevMonthYearThai,
+    prevMonthNameYear: `${prevMonthName} ${prevMonthYear}`,
+    prevMonthNameYearThai: `${prevMonthNameThai} ${prevMonthYearThai}`,
   };
 }
 
