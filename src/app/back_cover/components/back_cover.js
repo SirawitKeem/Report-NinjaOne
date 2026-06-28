@@ -12,9 +12,9 @@ const orgBranding = {
   },
   tracthai: {
     logoAlt: "TracThai Logo",
-    email: "support@tracthai.com",
-    phone: "02-123-4567",
-    website: "https://www.tracthai.com",
+    email: "sales@tracthai.com",
+    phone: "02-101-9884",
+    website: "www.tracthai.com",
     name: "TracThai"
   }
 };
@@ -59,7 +59,7 @@ export default async function BackCoverPage() {
           </div>
 
           {/* Vertical Divider */}
-          <div className="w-[2px] h-[110px] bg-white/70 shrink-0" />
+          <div className="w-[2px] h-[110px] bg-white/70 shrink-0" />s
 
           {/* Titles */}
           <div className="flex flex-col">
