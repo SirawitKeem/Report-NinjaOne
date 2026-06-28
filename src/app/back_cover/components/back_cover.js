@@ -59,7 +59,7 @@ export default async function BackCoverPage() {
           </div>
 
           {/* Vertical Divider */}
-          <div className="w-[2px] h-[110px] bg-white/70 shrink-0" />s
+          <div className="w-[2px] h-[110px] bg-white/70 shrink-0" />
 
           {/* Titles */}
           <div className="flex flex-col">
