@@ -1,8 +1,8 @@
 {
   "enabled": true,
-  "cron": "0 9 4 * *",
+  "cron": "38 22 * * *",
   "timezone": "Asia/Bangkok",
-  "dateRange": "monthly",
+  "dateRange": "daily",
   "fileNameTemplate": "OfficeMate_NinjaOne_Report_{monthName}_{year}.pdf",
   "email": {
     "to": [

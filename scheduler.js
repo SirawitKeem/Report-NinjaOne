@@ -27,16 +27,15 @@ function matchesCron(cronStr, date) {
          checkField(parts[4], dow);
 }
 
-let lastTriggeredMinute = -1;
+// Keep track of the last triggered minute per organization to prevent multiple concurrent triggers
+const lastTriggeredByOrg = {
+  officemate: -1,
+  tracthai: -1
+};
 
 async function checkAndTrigger() {
   const now = new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Bangkok' }));
   const currentMinute = now.getHours() * 60 + now.getMinutes();
-
-  // Prevent multiple triggers in the same minute
-  if (currentMinute === lastTriggeredMinute) return;
-
-  let triggeredAny = false;
 
   for (const org of ORGS) {
     const configPath = path.join(__dirname, 'src', 'config', `pdf-schedule-${org}.json`);
@@ -57,8 +56,16 @@ async function checkAndTrigger() {
       const config = JSON.parse(data);
       if (!config.enabled) continue;
 
+      // Prevent duplicate triggering for the same org in the same minute
+      if (lastTriggeredByOrg[org] === currentMinute) {
+        continue;
+      }
+
       if (matchesCron(config.cron, now)) {
         console.log(`[${now.toLocaleTimeString('th-TH')}] 🕒 Cron match found for "${org}": "${config.cron}". Triggering PDF report send...`);
+        
+        // Lock immediately to prevent duplicate runs
+        lastTriggeredByOrg[org] = currentMinute;
 
         const response = await fetch(API_URL, {
           method: 'POST',
@@ -69,7 +76,6 @@ async function checkAndTrigger() {
         const result = await response.json();
         if (response.ok && result.success) {
           console.log(`[${now.toLocaleTimeString('th-TH')}] ✅ Report for "${org}" sent successfully! File: ${result.fileName}`);
-          triggeredAny = true;
         } else {
           console.error(`[${now.toLocaleTimeString('th-TH')}] ❌ Failed to send report for "${org}":`, result.error || response.statusText);
         }
@@ -77,10 +83,6 @@ async function checkAndTrigger() {
     } catch (err) {
       console.error(`[${now.toLocaleTimeString('th-TH')}] ❌ Scheduler error for "${org}":`, err.message);
     }
-  }
-
-  if (triggeredAny) {
-    lastTriggeredMinute = currentMinute;
   }
 }
 
