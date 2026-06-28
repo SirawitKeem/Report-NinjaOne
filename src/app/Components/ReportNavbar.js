@@ -688,10 +688,10 @@ export default function ReportNavbar({ activeOrg = 'officemate' }) {
                     <div className="flex flex-wrap gap-1.5 mt-1.5">
                       <span className="text-[9.5px] text-slate-400 w-full mb-0.5">Dynamic tags (click to insert):</span>
                       {[
-                        { key: '{monthNameThai}_{yearThai}', label: `เดือนรายงาน (ไทย) เช่น ${previewVars.monthNameThai}_${previewVars.yearThai}` },
-                        { key: '{prevMonthNameThai}_{prevMonthYearThai}', label: `เดือนก่อนหน้า (ไทย) เช่น ${previewVars.prevMonthNameThai}_${previewVars.prevMonthYearThai}` },
-                        { key: '{monthName}_{year}', label: `เดือนรายงาน (อังกฤษ) เช่น ${previewVars.monthName}_${previewVars.year}` },
-                        { key: '{currentDateShort}', label: `วันที่ปัจจุบัน (สั้น) เช่น ${previewVars.currentDateShort?.replace(/\//g, '_')}` }
+                        { key: '{monthNameThai}_{yearThai}', label: `${previewVars.monthNameThai}_${previewVars.yearThai} (ไทย)` },
+                        { key: '{prevMonthNameThai}_{prevMonthYearThai}', label: `${previewVars.prevMonthNameThai}_${previewVars.prevMonthYearThai} (เดือนก่อน)` },
+                        { key: '{monthName}_{year}', label: `${previewVars.monthName}_${previewVars.year} (Eng)` },
+                        { key: '{currentDateShort}', label: `${previewVars.currentDateShort?.replace(/\//g, '_')} (วันที่)` }
                       ].map(tag => (
                         <button
                           key={tag.key}
@@ -751,11 +751,11 @@ export default function ReportNavbar({ activeOrg = 'officemate' }) {
                     <div className="flex flex-wrap gap-1.5 mt-1.5">
                       <span className="text-[9.5px] text-slate-400 w-full mb-0.5">Dynamic tags (click to insert):</span>
                       {[
-                        { key: '{monthNameThai} {yearThai}', label: `เดือนรายงาน (ไทย) - เช่น ${previewVars.monthNameThai} ${previewVars.yearThai}` },
-                        { key: '{prevMonthNameThai} {prevMonthYearThai}', label: `เดือนก่อนหน้า (ไทย) - เช่น ${previewVars.prevMonthNameThai} ${previewVars.prevMonthYearThai}` },
-                        { key: '{monthName} {year}', label: `เดือนรายงาน (อังกฤษ) - เช่น ${previewVars.monthName} ${previewVars.year}` },
-                        { key: '{currentDateThai}', label: `วันที่ปัจจุบัน (ไทยยาว) - เช่น ${previewVars.currentDateThai}` },
-                        { key: '{currentDateShort}', label: `วันที่ปัจจุบัน (สั้น) - เช่น ${previewVars.currentDateShort}` }
+                        { key: '{monthNameThai} {yearThai}', label: `${previewVars.monthNameThai} ${previewVars.yearThai} (ไทย)` },
+                        { key: '{prevMonthNameThai} {prevMonthYearThai}', label: `${previewVars.prevMonthNameThai} ${previewVars.prevMonthYearThai} (เดือนก่อน)` },
+                        { key: '{monthName} {year}', label: `${previewVars.monthName} ${previewVars.year} (Eng)` },
+                        { key: '{currentDateThai}', label: `${previewVars.currentDateThai} (ไทยยาว)` },
+                        { key: '{currentDateShort}', label: `${previewVars.currentDateShort} (สั้น)` }
                       ].map(tag => (
                         <button
                           key={tag.key}
@@ -838,22 +838,23 @@ export default function ReportNavbar({ activeOrg = 'officemate' }) {
                             <span className="text-[8px]">▼</span>
                           </button>
                           {insertTagDropdownOpen && (
-                            <div className="absolute left-0 mt-1 z-30 w-80 bg-white border border-slate-200 rounded-xl shadow-xl py-1 text-xs text-slate-700 max-h-56 overflow-y-auto">
+                            <div className="absolute left-0 mt-1 z-30 w-72 bg-white border border-slate-200 rounded-2xl shadow-xl py-1.5 text-xs text-slate-700 max-h-56 overflow-y-auto border-slate-100">
                               {[
-                                { tag: '{monthNameThai} {yearThai}', label: `เดือนรายงาน (ภาษาไทย) - เช่น ${previewVars.monthNameThai} ${previewVars.yearThai}` },
-                                { tag: '{prevMonthNameThai} {prevMonthYearThai}', label: `เดือนก่อนหน้า (ภาษาไทย) - เช่น ${previewVars.prevMonthNameThai} ${previewVars.prevMonthYearThai}` },
-                                { tag: '{monthName} {year}', label: `เดือนรายงาน (ภาษาอังกฤษ) - เช่น ${previewVars.monthName} ${previewVars.year}` },
-                                { tag: '{currentMonthName}', label: `เดือนปัจจุบัน (ภาษาอังกฤษ) - เช่น ${previewVars.currentMonthName}` },
-                                { tag: '{currentDateThai}', label: `วันที่ปัจจุบัน (ไทยยาว) - เช่น ${previewVars.currentDateThai}` },
-                                { tag: '{currentDateShort}', label: `วันที่ปัจจุบัน (สั้น) - เช่น ${previewVars.currentDateShort}` }
+                                { tag: '{monthNameThai} {yearThai}', title: 'เดือนรายงาน (ภาษาไทย)', preview: `${previewVars.monthNameThai} ${previewVars.yearThai}` },
+                                { tag: '{prevMonthNameThai} {prevMonthYearThai}', title: 'เดือนก่อนหน้า (ภาษาไทย)', preview: `${previewVars.prevMonthNameThai} ${previewVars.prevMonthYearThai}` },
+                                { tag: '{monthName} {year}', title: 'เดือนรายงาน (ภาษาอังกฤษ)', preview: `${previewVars.monthName} ${previewVars.year}` },
+                                { tag: '{currentMonthName}', title: 'เดือนปัจจุบัน (ภาษาอังกฤษ)', preview: previewVars.currentMonthName },
+                                { tag: '{currentDateThai}', title: 'วันที่ปัจจุบัน (ไทยยาว)', preview: previewVars.currentDateThai },
+                                { tag: '{currentDateShort}', title: 'วันที่ปัจจุบัน (สั้น)', preview: previewVars.currentDateShort }
                               ].map(item => (
                                 <button
                                   key={item.tag}
                                   type="button"
                                   onClick={() => insertTextAtCursor(item.tag)}
-                                  className="w-full text-left px-3.5 py-2 hover:bg-slate-50 cursor-pointer transition-colors font-medium text-slate-800"
+                                  className="w-full text-left px-3.5 py-1.5 hover:bg-slate-50 cursor-pointer transition-colors flex flex-col gap-0.5 border-b border-slate-100/30 last:border-b-0"
                                 >
-                                  {item.label}
+                                  <span className="font-bold text-slate-800 text-[10.5px]">{item.title}</span>
+                                  <span className="text-[9px] text-slate-400 font-normal">{item.preview}</span>
                                 </button>
                               ))}
                             </div>
