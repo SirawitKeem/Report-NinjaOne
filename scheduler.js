@@ -27,15 +27,15 @@ function matchesCron(cronStr, date) {
          checkField(parts[4], dow);
 }
 
-// Keep track of the last triggered minute per organization to prevent multiple concurrent triggers
-const lastTriggeredByOrg = {
-  officemate: -1,
-  tracthai: -1
-};
+// Track the last triggered datetime string per org to prevent duplicate runs
+// Key format: "YYYY-MM-DD HH:mm" — resets naturally each new day/minute
+const lastTriggeredByOrg = {};
 
 async function checkAndTrigger() {
   const now = new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Bangkok' }));
-  const currentMinute = now.getHours() * 60 + now.getMinutes();
+
+  // Build a full datetime key: "2026-06-29 08:00"
+  const dateKey = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')} ${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
 
   for (const org of ORGS) {
     const configPath = path.join(__dirname, 'src', 'config', `pdf-schedule-${org}.json`);
@@ -56,21 +56,21 @@ async function checkAndTrigger() {
       const config = JSON.parse(data);
       if (!config.enabled) continue;
 
-      // Prevent duplicate triggering for the same org in the same minute
-      if (lastTriggeredByOrg[org] === currentMinute) {
+      // Prevent duplicate triggering for the same org at the same minute on the same day
+      if (lastTriggeredByOrg[org] === dateKey) {
         continue;
       }
 
       if (matchesCron(config.cron, now)) {
         console.log(`[${now.toLocaleTimeString('th-TH')}] 🕒 Cron match found for "${org}": "${config.cron}". Triggering PDF report send...`);
-        
-        // Lock immediately to prevent duplicate runs
-        lastTriggeredByOrg[org] = currentMinute;
+
+        // Lock immediately to prevent duplicate runs within the same minute
+        lastTriggeredByOrg[org] = dateKey;
 
         const response = await fetch(API_URL, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ org }) // Explicitly scope the PDF dispatch to the matched organization
+          body: JSON.stringify({ org })
         });
 
         const result = await response.json();

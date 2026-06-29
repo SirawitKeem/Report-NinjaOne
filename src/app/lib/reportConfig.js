@@ -34,7 +34,7 @@ function normalizeDate(value, timeZone) {
 }
 
 export async function loadScheduleConfig() {
-  const configPath = getScheduleConfigPath();
+  const configPath = await getScheduleConfigPath();
   try {
     const payload = await fs.readFile(configPath, 'utf-8');
     return JSON.parse(payload);

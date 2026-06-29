@@ -6,6 +6,26 @@ import {
   Sliders, UserPlus, Info, Copy, Eye, Send, Play, Bold, Italic, Underline, List, ListOrdered, Link, Globe
 } from 'lucide-react';
 
+// Whitelist-based HTML sanitizer to prevent XSS in email body preview
+// Allows only safe formatting tags, strips all scripts, event handlers, and javascript: URLs
+function sanitizeHtml(html) {
+  if (!html) return '';
+  // Remove script/style/iframe/object tags and their content entirely
+  let clean = html
+    .replace(/<script[\s\S]*?<\/script>/gi, '')
+    .replace(/<style[\s\S]*?<\/style>/gi, '')
+    .replace(/<iframe[\s\S]*?>/gi, '')
+    .replace(/<object[\s\S]*?>/gi, '')
+    .replace(/<embed[\s\S]*?>/gi, '')
+    .replace(/<form[\s\S]*?>/gi, '');
+  // Remove all event handler attributes (onclick, onload, onerror, etc.)
+  clean = clean.replace(/\son\w+\s*=\s*(?:"[^"]*"|'[^']*'|[^\s>]*)/gi, '');
+  // Remove javascript: and data: URLs in href/src attributes
+  clean = clean.replace(/\s(?:href|src|action)\s*=\s*(?:"javascript:[^"]*"|'javascript:[^']*')/gi, '');
+  clean = clean.replace(/\s(?:href|src|action)\s*=\s*(?:"data:[^"]*"|'data:[^']*')/gi, '');
+  return clean;
+}
+
 export default function ReportNavbar({ activeOrg = 'officemate' }) {
   const [loading, setLoading] = useState(false);
   const [modalOpen, setModalOpen] = useState(false);
@@ -1241,7 +1261,7 @@ export default function ReportNavbar({ activeOrg = 'officemate' }) {
                 <span className="font-bold text-slate-400 uppercase text-[9px] tracking-wider">Email HTML Content:</span>
                 <div 
                   className="p-4 bg-slate-50 border border-slate-150 rounded-2xl max-h-[300px] overflow-y-auto font-sans leading-relaxed text-slate-850"
-                  dangerouslySetInnerHTML={{ __html: convertNewlinesToBrs(renderClientTemplate(emailConfig.body)) }}
+                  dangerouslySetInnerHTML={{ __html: sanitizeHtml(convertNewlinesToBrs(renderClientTemplate(emailConfig.body))) }}
                 />
               </div>
             </div>

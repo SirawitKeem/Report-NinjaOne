@@ -1,5 +1,6 @@
 import fs from 'fs/promises';
 import path from 'path';
+import { cache } from 'react';
 import { getOsPatchesNo } from './os_patches_no';
 
 const CACHE_DIR = path.join(process.cwd(), 'src', 'config');
@@ -52,38 +53,40 @@ async function fetchMsrcForKb(kb) {
   }
 }
 
-export async function getOsCveData() {
+// Wrapped with React cache() for request-level memoization:
+// All server components on the same page render that call getOsCveData()
+// will share a single fetch result instead of triggering 3 separate MSRC API calls.
+export const getOsCveData = cache(async function getOsCveDataImpl() {
   try {
     // 1. Get pending patches KBs
     const pendingPatches = await getOsPatchesNo();
     const kbs = [...new Set(pendingPatches.map(p => p.kbNumber).filter(Boolean))];
 
     // 2. Load existing cache
-    const cache = await loadCache();
+    const cveCache = await loadCache();
     let updated = false;
 
     // 3. Fetch missing KBs
     for (const kb of kbs) {
-      if (!cache[kb]) {
+      if (!cveCache[kb]) {
         const records = await fetchMsrcForKb(kb);
-        cache[kb] = records;
+        cveCache[kb] = records;
         updated = true;
         // Small delay to prevent rate limits
         await new Promise(r => setTimeout(r, 200));
-      } else {
       }
     }
 
     // 4. Save cache if new items fetched
     if (updated) {
-      await saveCache(cache);
+      await saveCache(cveCache);
     }
 
     // 5. Combine and process records for pending KBs
     const allCvesRaw = [];
     kbs.forEach(kb => {
-      if (cache[kb]) {
-        allCvesRaw.push(...cache[kb]);
+      if (cveCache[kb]) {
+        allCvesRaw.push(...cveCache[kb]);
       }
     });
 
@@ -132,7 +135,7 @@ export async function getOsCveData() {
         KB_Number: (item.kbArticles && item.kbArticles.length > 0) ? "KB" + item.kbArticles[0].articleName : "No KB"
       };
 
-      // If a CVE is listed multiple times, keep the one with the highest base score or the first one
+      // If a CVE is listed multiple times, keep the one with the highest base score
       if (!cveMap.has(cveId)) {
         cveMap.set(cveId, cveRecord);
       } else {
@@ -150,4 +153,4 @@ export async function getOsCveData() {
     console.error("❌ getOsCveData Error:", error);
     throw error;
   }
-}
+});
