@@ -4,6 +4,9 @@ import { getActiveOrg } from './ninjaClient';
 
 export async function getScheduleConfigPath() {
   const org = await getActiveOrg();
+  if (org !== 'officemate' && org !== 'tracthai') {
+    throw new Error(`Invalid organization context: "${org}"`);
+  }
   return path.join(process.cwd(), 'src', 'config', `pdf-schedule-${org}.json`);
 }
 
