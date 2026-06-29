@@ -1,7 +1,27 @@
-const fs = require('fs/promises');
+const fs = require('fs');
+const fsPromises = require('fs/promises');
 const path = require('path');
 
-const API_URL = 'http://127.0.0.1:3000/api/pdf';
+// Load environment variables from .env file if present
+try {
+  const envPath = path.join(__dirname, '.env');
+  const envData = fs.readFileSync(envPath, 'utf-8');
+  envData.split(/\r?\n/).forEach(line => {
+    if (line.trim().startsWith('#') || !line.trim()) return;
+    const index = line.indexOf('=');
+    if (index !== -1) {
+      const key = line.slice(0, index).trim();
+      let value = line.slice(index + 1).trim();
+      if (value.startsWith('"') && value.endsWith('"')) value = value.slice(1, -1);
+      else if (value.startsWith("'") && value.endsWith("'")) value = value.slice(1, -1);
+      process.env[key] = value;
+    }
+  });
+} catch (e) {
+  // Silence if .env is missing (e.g. env vars set via OS shell)
+}
+
+const API_URL = process.env.SCHEDULER_API_URL || 'http://127.0.0.1:3000/api/pdf';
 const ORGS = ['officemate', 'tracthai'];
 
 function matchesCron(cronStr, date) {
@@ -42,12 +62,12 @@ async function checkAndTrigger() {
     try {
       let data;
       try {
-        data = await fs.readFile(configPath, 'utf-8');
+        data = await fsPromises.readFile(configPath, 'utf-8');
       } catch (e) {
         // Fallback for officemate if the scoped file doesn't exist yet
         if (org === 'officemate') {
           const fallbackPath = path.join(__dirname, 'src', 'config', 'pdf-schedule.json');
-          data = await fs.readFile(fallbackPath, 'utf-8');
+          data = await fsPromises.readFile(fallbackPath, 'utf-8');
         } else {
           continue; // Skip if no config for this org
         }
