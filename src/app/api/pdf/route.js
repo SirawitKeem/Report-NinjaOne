@@ -20,6 +20,85 @@ process.env.TZ = 'Asia/Bangkok';
 const TZ = 'Asia/Bangkok';
 const BASE_URL = process.env.PDF_BASE_URL || 'http://127.0.0.1:3000';
 
+// Warn if PDF_BASE_URL is not explicitly set in production
+if (process.env.NODE_ENV === 'production' && !process.env.PDF_BASE_URL) {
+  console.warn('[route.js] WARNING: PDF_BASE_URL is not set. Defaulting to http://127.0.0.1:3000. Set this env var explicitly for production deployments.');
+}
+
+// ─── API Key Authentication ───────────────────────────────────────────────────
+// All mutation endpoints (POST, PUT) and the config GET endpoint require
+// a valid API key passed as the Authorization header: Bearer <INTERNAL_API_KEY>
+const INTERNAL_API_KEY = process.env.INTERNAL_API_KEY;
+
+function checkApiKey(request) {
+  if (!INTERNAL_API_KEY) return; // If no key configured, skip check (dev mode)
+  const auth = request.headers.get('authorization') || '';
+  const token = auth.startsWith('Bearer ') ? auth.slice(7) : '';
+  if (token !== INTERNAL_API_KEY) {
+    return new Response(JSON.stringify({ error: 'Unauthorized.' }), {
+      status: 401,
+      headers: { 'Content-Type': 'application/json' },
+    });
+  }
+  return null; // null = authorized
+}
+
+// ─── CSRF Origin Check ────────────────────────────────────────────────────────
+// Reject cross-origin mutation requests that don't come from the same host
+function checkOrigin(request) {
+  const origin = request.headers.get('origin');
+  const host = request.headers.get('host');
+  if (origin && host && !origin.includes(host)) {
+    return new Response(JSON.stringify({ error: 'Forbidden: Cross-origin request rejected.' }), {
+      status: 403,
+      headers: { 'Content-Type': 'application/json' },
+    });
+  }
+  return null; // null = allowed
+}
+
+// ─── PUT Body Schema Validation ───────────────────────────────────────────────
+const VALID_ORGS = ['officemate', 'tracthai'];
+const VALID_DATE_RANGES = ['daily', 'weekly', 'monthly', 'custom'];
+const VALID_TIMEZONES = ['Asia/Bangkok', 'UTC', 'Asia/Singapore', 'Asia/Tokyo'];
+const CRON_REGEX = /^(\*|\d+(?:,\d+)*|\*\/\d+|\d+-\d+)\s+(\*|\d+(?:,\d+)*|\*\/\d+|\d+-\d+)\s+(\*|\d+(?:,\d+)*|\*\/\d+|\d+-\d+)\s+(\*|\d+(?:,\d+)*|\*\/\d+|\d+-\d+)\s+(\*|\d+(?:,\d+)*|\*\/\d+|\d+-\d+)$/;
+
+function validatePutBody(body) {
+  const errors = [];
+  if (body.cron !== undefined && !CRON_REGEX.test(String(body.cron).trim())) {
+    errors.push('cron: must be a valid 5-field cron expression');
+  }
+  if (body.dateRange !== undefined && !VALID_DATE_RANGES.includes(body.dateRange)) {
+    errors.push(`dateRange: must be one of ${VALID_DATE_RANGES.join(', ')}`);
+  }
+  if (body.timezone !== undefined && !VALID_TIMEZONES.includes(body.timezone)) {
+    errors.push(`timezone: must be one of ${VALID_TIMEZONES.join(', ')}`);
+  }
+  if (body.fileNameTemplate !== undefined && typeof body.fileNameTemplate !== 'string') {
+    errors.push('fileNameTemplate: must be a string');
+  }
+  if (body.email !== undefined) {
+    if (body.email.to !== undefined && !Array.isArray(body.email.to)) {
+      errors.push('email.to: must be an array');
+    }
+    if (body.email.cc !== undefined && !Array.isArray(body.email.cc)) {
+      errors.push('email.cc: must be an array');
+    }
+  }
+  return errors;
+}
+
+// ─── Email Address Masker ─────────────────────────────────────────────────────
+function maskEmail(email) {
+  if (!email || !email.includes('@')) return email;
+  const [local, domain] = email.split('@');
+  return local.slice(0, 2) + '****@' + domain;
+}
+function maskEmailList(list) {
+  if (!Array.isArray(list)) return list;
+  return list.map(maskEmail);
+}
+
 async function getAccessToken() {
   const body = new URLSearchParams({
     grant_type: 'client_credentials',
@@ -125,6 +204,9 @@ async function parseJsonBody(request) {
 }
 
 export async function GET(request) {
+  const authError = checkApiKey(request);
+  if (authError) return authError;
+
   const url = new URL(request.url);
   // Resolve organization key from query params, cookies, or default
   let orgKey = url.searchParams.get('org') || request.cookies?.get('active_org')?.value || 'officemate';
@@ -135,13 +217,23 @@ export async function GET(request) {
     const range = computeRange(config, TZ);
     const vars = buildTemplateVars(config, range);
 
+    // Strip sensitive email addresses from the response (mask them)
+    const safeConfig = {
+      ...config,
+      email: config.email ? {
+        ...config.email,
+        to: maskEmailList(toAddressList(config.email.to)),
+        cc: maskEmailList(toAddressList(config.email.cc)),
+      } : config.email,
+    };
+
     return new Response(
       JSON.stringify({
-        config,
+        config: safeConfig,
         range,
         preview: {
-          to: toAddressList(config.email?.to),
-          cc: toAddressList(config.email?.cc),
+          to: maskEmailList(toAddressList(config.email?.to)),
+          cc: maskEmailList(toAddressList(config.email?.cc)),
           subject: renderTemplate(config.email?.subjectTemplate ?? '', vars),
           body: renderTemplate(config.email?.bodyTemplate ?? '', vars),
           fileName: renderTemplate(config.fileNameTemplate ?? 'report-{fromShort}-{untilShort}.pdf', vars),
@@ -156,6 +248,11 @@ export async function GET(request) {
 }
 
 export async function POST(request) {
+  const authError = checkApiKey(request);
+  if (authError) return authError;
+  const csrfError = checkOrigin(request);
+  if (csrfError) return csrfError;
+
   try {
     const body = await parseJsonBody(request);
     const url = new URL(request.url);
@@ -224,9 +321,23 @@ export async function POST(request) {
 }
 
 export async function PUT(request) {
+  const authError = checkApiKey(request);
+  if (authError) return authError;
+  const csrfError = checkOrigin(request);
+  if (csrfError) return csrfError;
+
   try {
     const body = await parseJsonBody(request);
     const url = new URL(request.url);
+
+    // Validate PUT body schema before writing to disk
+    const validationErrors = validatePutBody(body);
+    if (validationErrors.length > 0) {
+      return new Response(JSON.stringify({ error: 'Validation failed', details: validationErrors }), {
+        status: 400,
+        headers: { 'Content-Type': 'application/json' },
+      });
+    }
 
     // Resolve organization context: PUT body first, then query param, then request cookie
     let orgKey = body.org || url.searchParams.get('org') || request.cookies?.get('active_org')?.value || 'officemate';

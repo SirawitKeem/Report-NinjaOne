@@ -20,9 +20,18 @@ async function fetchAllPatchPages(endpoint) {
     else if (response.links && response.links.next) nextUrl = response.links.next;
 
     if (nextUrl) {
-      currentPath = nextUrl.replace("https://oc.ninjarmm.com", "");
+      try {
+        const parsed = new URL(nextUrl);
+        if (parsed.origin !== 'https://oc.ninjarmm.com') {
+          console.error('[os_patch_installs] Unexpected pagination origin, stopping:', parsed.origin);
+          break;
+        }
+        currentPath = parsed.pathname + parsed.search;
+      } catch {
+        currentPath = null; // ถ้า parse URL ไม่ได้ ให้หยุด Loop
+      }
     } else {
-      currentPath = null; // ไม่มีหน้าถัดไปแล้ว สั่งจบ Loop
+      currentPath = null;
     }
   }
 

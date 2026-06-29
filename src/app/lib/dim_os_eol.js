@@ -1,14 +1,18 @@
-// แนะนำให้เอา URL ไปใส่ใน .env เช่น OS_EOL_API_URL=http://192.168.3.170:8002
-// แต่ถ้ายังไม่ใส่ จะใช้ค่า Default เป็น IP นี้ครับ
-const BASE_URL = process.env.OS_EOL_API_URL || "http://192.168.3.170:8002";
+// OS_EOL_API_URL must be set in .env — no hardcoded IP fallback for security
+const BASE_URL = process.env.OS_EOL_API_URL;
+if (!BASE_URL) {
+  console.warn('[dim_os_eol] WARNING: OS_EOL_API_URL is not set. OS EOL data will be unavailable. Please set this in your .env file.');
+}
 
 export async function getOsEolData() {
+  if (!BASE_URL) {
+    console.error('[dim_os_eol] OS_EOL_API_URL not configured. Returning empty dataset.');
+    return [];
+  }
   try {
-    // ==========================================
     // 1. ดึงข้อมูลหน้าแรก (เพื่อหา Total Pages)
-    // ==========================================
     const firstRes = await fetch(`${BASE_URL}/data?page=1&page_size=20`);
-    if (!firstRes.ok) throw new Error("Failed to fetch OS EOL data (Page 1)");
+    if (!firstRes.ok) throw new Error(`Failed to fetch OS EOL data (Page 1): HTTP ${firstRes.status}`);
     
     const firstPageData = await firstRes.json();
     const totalPages = firstPageData.total_pages || 1;
@@ -24,7 +28,10 @@ export async function getOsEolData() {
       // สร้าง Promise สำหรับดึงหน้า 2 เป็นต้นไปพร้อมๆ กันเพื่อความเร็ว
       for (let p = 2; p <= totalPages; p++) {
         fetchPromises.push(
-          fetch(`${BASE_URL}/data?page=${p}&page_size=20`).then(res => res.json())
+          fetch(`${BASE_URL}/data?page=${p}&page_size=20`).then(res => {
+            if (!res.ok) throw new Error(`OS EOL page ${p} failed: HTTP ${res.status}`);
+            return res.json();
+          })
         );
       }
 

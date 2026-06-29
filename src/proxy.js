@@ -31,9 +31,10 @@ export function proxy(request) {
   if (currentCookie !== org) {
     response.cookies.set('active_org', org, {
       path: '/',
-      httpOnly: false, // Allow client-side JS to read
+      httpOnly: false, // Allow client-side JS to read for org switcher
       sameSite: 'lax',
       maxAge: 60 * 60 * 24 * 365, // 1 year
+      secure: process.env.NODE_ENV === 'production', // HTTPS only in production
     });
   }
   

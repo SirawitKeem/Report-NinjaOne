@@ -24,7 +24,11 @@ export async function getActiveOrg() {
       return orgHeader;
     }
   } catch (e) {
-    // headers() throws if called outside of request context (e.g. during build)
+    // headers() throws if called outside of request context (e.g. during build / static pre-rendering)
+    const msg = String(e?.message || '');
+    if (!msg.includes('outside') && !msg.includes('sync') && !msg.includes('dynamic') && !msg.includes('statically')) {
+      console.error('[getActiveOrg] Unexpected header error:', e);
+    }
   }
 
   // Check request cookies fallback
@@ -36,6 +40,10 @@ export async function getActiveOrg() {
     }
   } catch (e) {
     // cookies() throws if called outside of request context
+    const msg = String(e?.message || '');
+    if (!msg.includes('outside') && !msg.includes('sync') && !msg.includes('dynamic') && !msg.includes('statically')) {
+      console.error('[getActiveOrg] Unexpected cookie error:', e);
+    }
   }
 
   return 'officemate';
@@ -59,7 +67,12 @@ const orgCacheStates = {
   }
 };
 
+const VALID_NINJA_ORGS = ['officemate', 'tracthai'];
+
 function getCacheState(org) {
+  if (!VALID_NINJA_ORGS.includes(org)) {
+    throw new Error(`[getCacheState] Invalid org key: "${org}". Must be one of: ${VALID_NINJA_ORGS.join(', ')}`);
+  }
   if (!orgCacheStates[org]) {
     orgCacheStates[org] = {
       cachedToken: null,

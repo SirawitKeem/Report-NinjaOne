@@ -67,9 +67,14 @@ async function checkAndTrigger() {
         // Lock immediately to prevent duplicate runs within the same minute
         lastTriggeredByOrg[org] = dateKey;
 
+        // Include API key for internal authentication
+        const apiKey = process.env.INTERNAL_API_KEY || '';
         const response = await fetch(API_URL, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: {
+            'Content-Type': 'application/json',
+            ...(apiKey ? { 'Authorization': `Bearer ${apiKey}` } : {}),
+          },
           body: JSON.stringify({ org })
         });
 
@@ -87,7 +92,6 @@ async function checkAndTrigger() {
 }
 
 console.log('🚀 NinjaOne Report Scheduler Daemon started!');
-console.log(`Target endpoint: ${API_URL}`);
 console.log('Orgs monitored: ' + ORGS.join(', '));
 console.log('Timezone: Asia/Bangkok');
 

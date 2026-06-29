@@ -17,7 +17,16 @@ async function fetchAllPages(endpoint) {
     else if (response.links && response.links.next) nextUrl = response.links.next;
 
     if (nextUrl) {
-      currentPath = nextUrl.replace("https://oc.ninjarmm.com", "");
+      try {
+        const parsed = new URL(nextUrl);
+        if (parsed.origin !== 'https://oc.ninjarmm.com') {
+          console.error('[software] Unexpected pagination origin, stopping:', parsed.origin);
+          break;
+        }
+        currentPath = parsed.pathname + parsed.search;
+      } catch {
+        currentPath = null;
+      }
     } else {
       currentPath = null;
     }
@@ -73,10 +82,6 @@ export async function getSoftwarePatches() {
 export async function getSoftwarePatchInstalls() {
   try {
     const rawData = await fetchAllPages("/v2/queries/software-patch-installs");
-
-    // 🔍 ดู impact จริงจาก endpoint นี้
-    const uniqueImpact = [...new Set(rawData.map(i => i.impact))];
-    const uniqueStatus = [...new Set(rawData.map(i => i.status))];
 
     const transformedData = rawData.map(item => ({
       patchId:           item.id                ?? null,

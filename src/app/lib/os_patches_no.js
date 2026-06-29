@@ -17,7 +17,16 @@ async function fetchAllPatchPages(endpoint) {
     else if (response.links && response.links.next) nextUrl = response.links.next;
 
     if (nextUrl) {
-      currentPath = nextUrl.replace("https://oc.ninjarmm.com", "");
+      try {
+        const parsed = new URL(nextUrl);
+        if (parsed.origin !== 'https://oc.ninjarmm.com') {
+          console.error('[os_patches_no] Unexpected pagination origin, stopping:', parsed.origin);
+          break;
+        }
+        currentPath = parsed.pathname + parsed.search;
+      } catch {
+        currentPath = null;
+      }
     } else {
       currentPath = null;
     }
