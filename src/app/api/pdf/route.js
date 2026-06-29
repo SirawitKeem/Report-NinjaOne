@@ -217,23 +217,13 @@ export async function GET(request) {
     const range = computeRange(config, TZ);
     const vars = buildTemplateVars(config, range);
 
-    // Strip sensitive email addresses from the response (mask them)
-    const safeConfig = {
-      ...config,
-      email: config.email ? {
-        ...config.email,
-        to: maskEmailList(toAddressList(config.email.to)),
-        cc: maskEmailList(toAddressList(config.email.cc)),
-      } : config.email,
-    };
-
     return new Response(
       JSON.stringify({
-        config: safeConfig,
+        config,
         range,
         preview: {
-          to: maskEmailList(toAddressList(config.email?.to)),
-          cc: maskEmailList(toAddressList(config.email?.cc)),
+          to: toAddressList(config.email?.to),
+          cc: toAddressList(config.email?.cc),
           subject: renderTemplate(config.email?.subjectTemplate ?? '', vars),
           body: renderTemplate(config.email?.bodyTemplate ?? '', vars),
           fileName: renderTemplate(config.fileNameTemplate ?? 'report-{fromShort}-{untilShort}.pdf', vars),
