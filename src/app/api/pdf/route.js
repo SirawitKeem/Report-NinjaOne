@@ -123,6 +123,8 @@ async function getAccessToken() {
 
 async function sendGraphMail({ to, cc, subject, html, pdfBuffer, fileName }) {
   const token = await getAccessToken();
+  
+  console.log(`[sendGraphMail] Sending email. To: ${JSON.stringify(to)}, CC: ${JSON.stringify(cc)}, Subject: "${subject}"`);
 
   const payload = {
     message: {

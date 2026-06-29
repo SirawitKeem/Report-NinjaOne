@@ -1,6 +1,6 @@
 {
   "enabled": true,
-  "cron": "10 13 * * *",
+  "cron": "22 13 * * *",
   "timezone": "Asia/Bangkok",
   "dateRange": "daily",
   "fileNameTemplate": "OfficeMate_NinjaOne_Report_{monthName}_{year}.pdf",
