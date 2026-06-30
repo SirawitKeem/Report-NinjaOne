@@ -49,17 +49,20 @@ export default async function CveDevicesTable() {
               {displayedCritical.length > 0 ? (
                 <div className="flex flex-col gap-1.5">
                   {displayedCritical.map((c, i) => (
-                    <div key={c.CVE_ID || i} className="flex items-center justify-between text-xs py-1 border-b border-red-100/30 last:border-b-0">
-                      <div className="flex items-center gap-2">
+                    <div key={c.CVE_ID || i} className="flex items-center text-xs py-1 border-b border-red-100/30 last:border-b-0">
+                      {/* Left Column: CVE ID + Score */}
+                      <div className="flex items-center gap-2 w-44 shrink-0">
                         <span className="font-extrabold text-slate-900">{c.CVE_ID}</span>
                         <span className="font-extrabold text-red-700 bg-red-50 px-1.5 py-0.5 rounded text-[9px] leading-none">
                           {c.CVSS_Base_Score?.toFixed(1)}
                         </span>
-                        <span className="text-[9px] text-slate-500 font-medium ml-1">
-                          {c.deviceCount} {c.deviceCount === 1 ? 'Host' : 'Hosts'}
-                        </span>
                       </div>
-                      <div className="flex flex-wrap gap-1 items-center justify-end">
+                      
+                      {/* Right Column: Host Count + Left-Aligned Device Tags */}
+                      <div className="flex-1 flex flex-wrap gap-1.5 items-center justify-start">
+                        <span className="text-[9px] text-slate-500 font-medium mr-1 shrink-0">
+                          {c.deviceCount} {c.deviceCount === 1 ? 'Host' : 'Hosts'}:
+                        </span>
                         {c.devices.slice(0, 5).map((dev, idx) => (
                           <span key={idx} className="inline-flex items-center gap-1 rounded bg-white border border-red-200 px-1.5 py-0.5 text-[9px] font-semibold text-slate-700 leading-none">
                             <Server className="h-2 w-2 text-red-600" />
@@ -93,17 +96,20 @@ export default async function CveDevicesTable() {
               {displayedHigh.length > 0 ? (
                 <div className="flex flex-col gap-1.5">
                   {displayedHigh.map((c, i) => (
-                    <div key={c.CVE_ID || i} className="flex items-center justify-between text-xs py-1 border-b border-red-100/30 last:border-b-0">
-                      <div className="flex items-center gap-2">
+                    <div key={c.CVE_ID || i} className="flex items-center text-xs py-1 border-b border-red-100/30 last:border-b-0">
+                      {/* Left Column: CVE ID + Score */}
+                      <div className="flex items-center gap-2 w-44 shrink-0">
                         <span className="font-extrabold text-slate-900">{c.CVE_ID}</span>
                         <span className="font-extrabold text-red-500 bg-red-50/50 px-1.5 py-0.5 rounded text-[9px] leading-none">
                           {c.CVSS_Base_Score?.toFixed(1)}
                         </span>
-                        <span className="text-[9px] text-slate-500 font-medium ml-1">
-                          {c.deviceCount} {c.deviceCount === 1 ? 'Host' : 'Hosts'}
-                        </span>
                       </div>
-                      <div className="flex flex-wrap gap-1 items-center justify-end">
+                      
+                      {/* Right Column: Host Count + Left-Aligned Device Tags */}
+                      <div className="flex-1 flex flex-wrap gap-1.5 items-center justify-start">
+                        <span className="text-[9px] text-slate-500 font-medium mr-1 shrink-0">
+                          {c.deviceCount} {c.deviceCount === 1 ? 'Host' : 'Hosts'}:
+                        </span>
                         {c.devices.slice(0, 5).map((dev, idx) => (
                           <span key={idx} className="inline-flex items-center gap-1 rounded bg-white border border-red-100 px-1.5 py-0.5 text-[9px] font-semibold text-slate-700 leading-none">
                             <Server className="h-2 w-2 text-red-400" />
@@ -137,17 +143,20 @@ export default async function CveDevicesTable() {
               {displayedMediumLow.length > 0 ? (
                 <div className="flex flex-col gap-1.5">
                   {displayedMediumLow.map((c, i) => (
-                    <div key={c.CVE_ID || i} className="flex items-center justify-between text-xs py-1 border-b border-orange-100/30 last:border-b-0">
-                      <div className="flex items-center gap-2">
+                    <div key={c.CVE_ID || i} className="flex items-center text-xs py-1 border-b border-orange-100/30 last:border-b-0">
+                      {/* Left Column: CVE ID + Score */}
+                      <div className="flex items-center gap-2 w-44 shrink-0">
                         <span className="font-extrabold text-slate-900">{c.CVE_ID}</span>
                         <span className="font-extrabold text-orange-650 bg-orange-50 px-1.5 py-0.5 rounded text-[9px] leading-none">
                           {c.CVSS_Base_Score?.toFixed(1)}
                         </span>
-                        <span className="text-[9px] text-slate-500 font-medium ml-1">
-                          {c.deviceCount} {c.deviceCount === 1 ? 'Host' : 'Hosts'}
-                        </span>
                       </div>
-                      <div className="flex flex-wrap gap-1 items-center justify-end">
+                      
+                      {/* Right Column: Host Count + Left-Aligned Device Tags */}
+                      <div className="flex-1 flex flex-wrap gap-1.5 items-center justify-start">
+                        <span className="text-[9px] text-slate-500 font-medium mr-1 shrink-0">
+                          {c.deviceCount} {c.deviceCount === 1 ? 'Host' : 'Hosts'}:
+                        </span>
                         {c.devices.slice(0, 5).map((dev, idx) => (
                           <span key={idx} className="inline-flex items-center gap-1 rounded bg-white border border-orange-100 px-1.5 py-0.5 text-[9px] font-semibold text-slate-700 leading-none">
                             <Server className="h-2 w-2 text-orange-400" />
