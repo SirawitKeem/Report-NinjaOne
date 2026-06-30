@@ -56,16 +56,18 @@ export default async function CveDevicesTable() {
                           {c.CVSS_Base_Score?.toFixed(1)}
                         </span>
                       </div>
-                      <div className="flex flex-wrap gap-1 items-center justify-end">
-                        <span className="text-[9px] text-slate-500 mr-1.5 font-medium">({c.deviceCount} hosts):</span>
-                        {c.devices.slice(0, 3).map((dev, idx) => (
+                      <div className="flex flex-wrap gap-1.5 items-center justify-end">
+                        <span className="text-[9px] font-extrabold text-red-700 bg-red-100/70 border border-red-200 px-2 py-0.5 rounded-full uppercase leading-none">
+                          Hosts ({c.deviceCount})
+                        </span>
+                        {c.devices.slice(0, 5).map((dev, idx) => (
                           <span key={idx} className="inline-flex items-center gap-1 rounded bg-white border border-red-200 px-1.5 py-0.5 text-[9px] font-semibold text-slate-700 leading-none">
                             <Server className="h-2 w-2 text-red-600" />
                             {dev}
                           </span>
                         ))}
-                        {c.devices.length > 3 && (
-                          <span className="text-[9px] text-slate-400 font-bold ml-1 leading-none">+{c.devices.length - 3} more</span>
+                        {c.devices.length > 5 && (
+                          <span className="text-[9px] text-slate-400 font-bold ml-1 leading-none">+{c.devices.length - 5} more</span>
                         )}
                       </div>
                     </div>
@@ -98,16 +100,18 @@ export default async function CveDevicesTable() {
                           {c.CVSS_Base_Score?.toFixed(1)}
                         </span>
                       </div>
-                      <div className="flex flex-wrap gap-1 items-center justify-end">
-                        <span className="text-[9px] text-slate-500 mr-1.5 font-medium">({c.deviceCount} hosts):</span>
-                        {c.devices.slice(0, 3).map((dev, idx) => (
+                      <div className="flex flex-wrap gap-1.5 items-center justify-end">
+                        <span className="text-[9px] font-extrabold text-red-500 bg-red-50 border border-red-200 px-2 py-0.5 rounded-full uppercase leading-none">
+                          Hosts ({c.deviceCount})
+                        </span>
+                        {c.devices.slice(0, 5).map((dev, idx) => (
                           <span key={idx} className="inline-flex items-center gap-1 rounded bg-white border border-red-100 px-1.5 py-0.5 text-[9px] font-semibold text-slate-700 leading-none">
                             <Server className="h-2 w-2 text-red-400" />
                             {dev}
                           </span>
                         ))}
-                        {c.devices.length > 3 && (
-                          <span className="text-[9px] text-slate-400 font-bold ml-1 leading-none">+{c.devices.length - 3} more</span>
+                        {c.devices.length > 5 && (
+                          <span className="text-[9px] text-slate-400 font-bold ml-1 leading-none">+{c.devices.length - 5} more</span>
                         )}
                       </div>
                     </div>
@@ -140,16 +144,18 @@ export default async function CveDevicesTable() {
                           {c.CVSS_Base_Score?.toFixed(1)}
                         </span>
                       </div>
-                      <div className="flex flex-wrap gap-1 items-center justify-end">
-                        <span className="text-[9px] text-slate-500 mr-1.5 font-medium">({c.deviceCount} hosts):</span>
-                        {c.devices.slice(0, 3).map((dev, idx) => (
+                      <div className="flex flex-wrap gap-1.5 items-center justify-end">
+                        <span className="text-[9px] font-extrabold text-orange-700 bg-orange-50 border border-orange-200 px-2 py-0.5 rounded-full uppercase leading-none">
+                          Hosts ({c.deviceCount})
+                        </span>
+                        {c.devices.slice(0, 5).map((dev, idx) => (
                           <span key={idx} className="inline-flex items-center gap-1 rounded bg-white border border-orange-100 px-1.5 py-0.5 text-[9px] font-semibold text-slate-700 leading-none">
                             <Server className="h-2 w-2 text-orange-400" />
                             {dev}
                           </span>
                         ))}
-                        {c.devices.length > 3 && (
-                          <span className="text-[9px] text-slate-400 font-bold ml-1 leading-none">+{c.devices.length - 3} more</span>
+                        {c.devices.length > 5 && (
+                          <span className="text-[9px] text-slate-400 font-bold ml-1 leading-none">+{c.devices.length - 5} more</span>
                         )}
                       </div>
                     </div>

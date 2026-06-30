@@ -190,7 +190,6 @@ async function page() {
 
             <div className="flex flex-col h-[1150px] w-[794px] overflow-hidden bg-white pl-10 shadow-[0_0_10px_rgba(0,0,0,0.1)] break-before-page bg-[url('/gbb.png')] bg-cover bg-center bg-no-repeat mb-5">
               <CveHeader />
-              <CveStats />
               <CveDevicesTable />
               <Footer pageNumber={13} />
             </div>
