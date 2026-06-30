@@ -2,6 +2,7 @@ import fs from 'fs/promises';
 import path from 'path';
 import { cache } from 'react';
 import { getOsPatchesNo } from './os_patches_no';
+import { getDevicesData } from './device';
 
 const CACHE_DIR = path.join(process.cwd(), 'src', 'config');
 const CACHE_PATH = path.join(CACHE_DIR, 'cve-cache.json');
@@ -154,3 +155,83 @@ export const getOsCveData = cache(async function getOsCveDataImpl() {
     throw error;
   }
 });
+
+export const getCveDeviceMapping = cache(async function getCveDeviceMappingImpl() {
+  try {
+    const pendingPatches = await getOsPatchesNo();
+    const devices = await getDevicesData();
+    const cveCache = await loadCache();
+
+    // Map deviceId -> displayName or systemName
+    const deviceMap = new Map();
+    devices.forEach(d => {
+      deviceMap.set(d.id, d.displayName || d.systemName);
+    });
+
+    const cveMap = new Map();
+
+    pendingPatches.forEach(patch => {
+      const kb = patch.kbNumber;
+      const deviceId = patch.deviceId;
+      if (!kb || !deviceId) return;
+
+      const deviceName = deviceMap.get(deviceId) || `Device #${deviceId}`;
+      const msrcRecords = cveCache[kb] || [];
+
+      msrcRecords.forEach(item => {
+        const cveId = item.cveNumber;
+        if (!cveId) return;
+
+        // Extract CVSS score
+        let baseScore = null;
+        if (item.baseScore) {
+          baseScore = parseFloat(item.baseScore);
+        } else if (item.cvssScoreSets && item.cvssScoreSets.length > 0) {
+          baseScore = parseFloat(item.cvssScoreSets[0].baseScore);
+        }
+
+        if (baseScore === null || isNaN(baseScore)) {
+          const sev = (item.severity || "").toUpperCase();
+          if (sev === "CRITICAL") baseScore = 9.0;
+          else if (sev === "IMPORTANT") baseScore = 7.0;
+          else if (sev === "MODERATE") baseScore = 4.0;
+          else if (sev === "LOW") baseScore = 1.0;
+          else baseScore = 0.0;
+        }
+
+        let level = "None";
+        if (baseScore >= 9.0) level = "Critical";
+        else if (baseScore >= 7.0) level = "High";
+        else if (baseScore >= 4.0) level = "Medium";
+        else if (baseScore > 0) level = "Low";
+
+        if (!cveMap.has(cveId)) {
+          cveMap.set(cveId, {
+            CVE_ID: cveId,
+            Severity: item.severity || "Unknown",
+            CVSS_Base_Score: baseScore,
+            CVSS_Level: level,
+            Impact: item.impact || "Unknown",
+            Product: item.product || "Unknown",
+            devices: new Set()
+          });
+        }
+        
+        cveMap.get(cveId).devices.add(deviceName);
+      });
+    });
+
+    // Convert Sets to Arrays and sort by CVSS score descending
+    const result = Array.from(cveMap.values()).map(c => ({
+      ...c,
+      devices: Array.from(c.devices),
+      deviceCount: c.devices.size
+    })).sort((a, b) => b.CVSS_Base_Score - a.CVSS_Base_Score || b.deviceCount - a.deviceCount);
+
+    return result;
+  } catch (error) {
+    console.error("❌ getCveDeviceMapping Error:", error);
+    return [];
+  }
+});
+

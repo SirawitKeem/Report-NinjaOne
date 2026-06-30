@@ -18,7 +18,7 @@ try {
     }
   });
 } catch (e) {
-  // Silence if .env is missing (e.g. env vars set via OS shell)
+
 }
 
 const API_URL = process.env.SCHEDULER_API_URL || 'http://127.0.0.1:3000/api/pdf';

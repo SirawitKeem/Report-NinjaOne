@@ -73,7 +73,7 @@ export default async function BackCoverPage() {
 
         </div>
       </div>
-c
+
       {/* Bottom Right Contacts & Date */}
       <div className="flex flex-col items-end shrink-0 select-none">
         
