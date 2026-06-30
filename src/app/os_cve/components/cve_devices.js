@@ -35,11 +35,11 @@ export default async function CveDevicesTable() {
           <div className="grid grid-cols-1 gap-3">
             
             {/* Group 1: Critical (Score 9.0 - 10.0) -> Dark Red */}
-            <div className="flex flex-col border-l-4 border-red-700 bg-red-50/15 p-3 rounded-r-xl border border-y-slate-100 border-r-slate-100">
+            <div className="flex flex-col border-l-4 border-red-700 bg-white p-3 rounded-r-xl border border-y-slate-100 border-r-slate-100">
               <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center gap-2">
                   <ShieldX className="h-4 w-4 text-red-700" />
-                  <span className="text-[11px] font-bold text-red-950 font-sans">Critical Severity Vulnerabilities (CVSS 9.0+)</span>
+                  <span className="text-[11px] font-bold text-red-955 font-sans">Critical Severity Vulnerabilities (CVSS 9.0+)</span>
                 </div>
                 <span className="text-[9px] font-extrabold bg-red-100 text-red-700 px-2 py-0.5 rounded-full leading-none">
                   {criticalCves.length} Active
@@ -79,7 +79,7 @@ export default async function CveDevicesTable() {
             </div>
 
             {/* Group 2: High (Score 7.0 - 8.9) -> Red */}
-            <div className="flex flex-col border-l-4 border-red-500 bg-red-50/5 p-3 rounded-r-xl border border-y-slate-100 border-r-slate-100">
+            <div className="flex flex-col border-l-4 border-red-500 bg-white p-3 rounded-r-xl border border-y-slate-100 border-r-slate-100">
               <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center gap-2">
                   <AlertTriangle className="h-4 w-4 text-red-500" />
@@ -123,7 +123,7 @@ export default async function CveDevicesTable() {
             </div>
 
             {/* Group 3: Medium & Low (Score < 7.0) -> Orange */}
-            <div className="flex flex-col border-l-4 border-orange-500 bg-orange-50/10 p-3 rounded-r-xl border border-y-slate-100 border-r-slate-100">
+            <div className="flex flex-col border-l-4 border-orange-500 bg-white p-3 rounded-r-xl border border-y-slate-100 border-r-slate-100">
               <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center gap-2">
                   <Info className="h-4 w-4 text-orange-500" />
@@ -140,7 +140,7 @@ export default async function CveDevicesTable() {
                     <div key={c.CVE_ID || i} className="flex items-center justify-between text-xs py-1 border-b border-orange-100/30 last:border-b-0">
                       <div className="flex items-center gap-2">
                         <span className="font-extrabold text-slate-900">{c.CVE_ID}</span>
-                        <span className="font-extrabold text-orange-655 bg-orange-50 px-1.5 py-0.5 rounded text-[9px] leading-none">
+                        <span className="font-extrabold text-orange-600 bg-orange-50 px-1.5 py-0.5 rounded text-[9px] leading-none">
                           {c.CVSS_Base_Score?.toFixed(1)}
                         </span>
                         <span className="text-[9px] text-slate-500 font-medium ml-1">
