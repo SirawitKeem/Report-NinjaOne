@@ -249,9 +249,7 @@ export const getDeviceCveSummary = cache(async function getDeviceCveSummaryImpl(
         name: d.displayName || d.systemName,
         osGroup: d.osGroup || 'Windows',
         patchCount: 0,
-        cveIds: new Set(),
-        criticalCount: 0,
-        highCount: 0
+        cveMap: new Map() // Map CVE_ID -> CVSS Level
       });
     });
 
@@ -268,9 +266,7 @@ export const getDeviceCveSummary = cache(async function getDeviceCveSummaryImpl(
           name: `Device #${deviceId}`,
           osGroup: 'Windows',
           patchCount: 0,
-          cveIds: new Set(),
-          criticalCount: 0,
-          highCount: 0
+          cveMap: new Map()
         };
         deviceMap.set(deviceId, dev);
       }
@@ -281,8 +277,6 @@ export const getDeviceCveSummary = cache(async function getDeviceCveSummaryImpl(
         cveCache[kb].forEach(item => {
           const cveId = item.cveNumber;
           if (!cveId) return;
-
-          dev.cveIds.add(cveId);
 
           // Extract CVSS score to classify severity
           let baseScore = null;
@@ -299,26 +293,39 @@ export const getDeviceCveSummary = cache(async function getDeviceCveSummaryImpl(
             else baseScore = 0.0;
           }
 
-          if (baseScore >= 9.0) {
-            dev.criticalCount += 1;
-          } else if (baseScore >= 7.0) {
-            dev.highCount += 1;
-          }
+          let level = "None";
+          if (baseScore >= 9.0) level = "Critical";
+          else if (baseScore >= 7.0) level = "High";
+          else if (baseScore >= 4.0) level = "Medium";
+          else if (baseScore > 0) level = "Low";
+
+          // Save unique CVEs mapped to their severity class
+          dev.cveMap.set(cveId, level);
         });
       }
     });
 
     const result = Array.from(deviceMap.values())
-      .map(d => ({
-        id: d.id,
-        name: d.name,
-        osGroup: d.osGroup,
-        patchCount: d.patchCount,
-        cveCount: d.cveIds.size,
-        criticalCount: d.criticalCount,
-        highCount: d.highCount,
-        cves: Array.from(d.cveIds)
-      }))
+      .map(d => {
+        let criticalCount = 0;
+        let highCount = 0;
+
+        d.cveMap.forEach((level) => {
+          if (level === "Critical") criticalCount++;
+          else if (level === "High") highCount++;
+        });
+
+        return {
+          id: d.id,
+          name: d.name,
+          osGroup: d.osGroup,
+          patchCount: d.patchCount,
+          cveCount: d.cveMap.size,
+          criticalCount,
+          highCount,
+          cves: Array.from(d.cveMap.keys())
+        };
+      })
       .filter(d => d.patchCount > 0) // Only display active vulnerable devices
       .sort((a, b) => b.cveCount - a.cveCount || b.patchCount - a.patchCount);
 
