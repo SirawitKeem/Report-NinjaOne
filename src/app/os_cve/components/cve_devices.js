@@ -55,11 +55,11 @@ export default async function CveDevicesTable() {
                         <span className="font-extrabold text-red-700 bg-red-50 px-1.5 py-0.5 rounded text-[9px] leading-none">
                           {c.CVSS_Base_Score?.toFixed(1)}
                         </span>
-                      </div>
-                      <div className="flex flex-wrap gap-1.5 items-center justify-end">
-                        <span className="text-[9px] font-extrabold text-red-700 bg-red-100/70 border border-red-200 px-2 py-0.5 rounded-full uppercase leading-none">
-                          Hosts ({c.deviceCount})
+                        <span className="text-[9px] text-slate-500 font-medium ml-1">
+                          {c.deviceCount} {c.deviceCount === 1 ? 'Host' : 'Hosts'}
                         </span>
+                      </div>
+                      <div className="flex flex-wrap gap-1 items-center justify-end">
                         {c.devices.slice(0, 5).map((dev, idx) => (
                           <span key={idx} className="inline-flex items-center gap-1 rounded bg-white border border-red-200 px-1.5 py-0.5 text-[9px] font-semibold text-slate-700 leading-none">
                             <Server className="h-2 w-2 text-red-600" />
@@ -99,11 +99,11 @@ export default async function CveDevicesTable() {
                         <span className="font-extrabold text-red-500 bg-red-50/50 px-1.5 py-0.5 rounded text-[9px] leading-none">
                           {c.CVSS_Base_Score?.toFixed(1)}
                         </span>
-                      </div>
-                      <div className="flex flex-wrap gap-1.5 items-center justify-end">
-                        <span className="text-[9px] font-extrabold text-red-500 bg-red-50 border border-red-200 px-2 py-0.5 rounded-full uppercase leading-none">
-                          Hosts ({c.deviceCount})
+                        <span className="text-[9px] text-slate-500 font-medium ml-1">
+                          {c.deviceCount} {c.deviceCount === 1 ? 'Host' : 'Hosts'}
                         </span>
+                      </div>
+                      <div className="flex flex-wrap gap-1 items-center justify-end">
                         {c.devices.slice(0, 5).map((dev, idx) => (
                           <span key={idx} className="inline-flex items-center gap-1 rounded bg-white border border-red-100 px-1.5 py-0.5 text-[9px] font-semibold text-slate-700 leading-none">
                             <Server className="h-2 w-2 text-red-400" />
@@ -143,11 +143,11 @@ export default async function CveDevicesTable() {
                         <span className="font-extrabold text-orange-650 bg-orange-50 px-1.5 py-0.5 rounded text-[9px] leading-none">
                           {c.CVSS_Base_Score?.toFixed(1)}
                         </span>
-                      </div>
-                      <div className="flex flex-wrap gap-1.5 items-center justify-end">
-                        <span className="text-[9px] font-extrabold text-orange-700 bg-orange-50 border border-orange-200 px-2 py-0.5 rounded-full uppercase leading-none">
-                          Hosts ({c.deviceCount})
+                        <span className="text-[9px] text-slate-500 font-medium ml-1">
+                          {c.deviceCount} {c.deviceCount === 1 ? 'Host' : 'Hosts'}
                         </span>
+                      </div>
+                      <div className="flex flex-wrap gap-1 items-center justify-end">
                         {c.devices.slice(0, 5).map((dev, idx) => (
                           <span key={idx} className="inline-flex items-center gap-1 rounded bg-white border border-orange-100 px-1.5 py-0.5 text-[9px] font-semibold text-slate-700 leading-none">
                             <Server className="h-2 w-2 text-orange-400" />
