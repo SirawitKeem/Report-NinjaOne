@@ -13,12 +13,12 @@ export default async function CveDevicesTable() {
     const mediumLowCves = cveMapping.filter(c => c.CVSS_Level === 'Medium' || c.CVSS_Level === 'Low' || c.CVSS_Level === 'None');
 
     // Slice groups to fit the A4 page height perfectly without overflow
-    const displayedCritical = criticalCves.slice(0, 4);
-    const displayedHigh = highCves.slice(0, 4);
-    const displayedMediumLow = mediumLowCves.slice(0, 3);
+    const displayedCritical = criticalCves.slice(0, 5);
+    const displayedHigh = highCves.slice(0, 5);
+    const displayedMediumLow = mediumLowCves.slice(0, 4);
 
-    // Get Top 5 vulnerable devices for the Risk Profile section
-    const topDevices = deviceSummary.slice(0, 5);
+    // Get Top 6 vulnerable devices for the Risk Profile section
+    const topDevices = deviceSummary.slice(0, 6);
 
     return (
       <div className="w-full pr-10 mt-4 flex flex-col gap-6 font-sans">
