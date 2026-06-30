@@ -13,12 +13,12 @@ export default async function CveDevicesTable() {
     const mediumLowCves = cveMapping.filter(c => c.CVSS_Level === 'Medium' || c.CVSS_Level === 'Low' || c.CVSS_Level === 'None');
 
     // Slice groups to fit the A4 page height perfectly without overflow
-    const displayedCritical = criticalCves.slice(0, 3);
-    const displayedHigh = highCves.slice(0, 3);
-    const displayedMediumLow = mediumLowCves.slice(0, 2);
+    const displayedCritical = criticalCves.slice(0, 4);
+    const displayedHigh = highCves.slice(0, 4);
+    const displayedMediumLow = mediumLowCves.slice(0, 3);
 
-    // Get Top 4 vulnerable devices for the Risk Profile section
-    const topDevices = deviceSummary.slice(0, 4);
+    // Get Top 5 vulnerable devices for the Risk Profile section
+    const topDevices = deviceSummary.slice(0, 5);
 
     return (
       <div className="w-full pr-10 mt-4 flex flex-col gap-6 font-sans">
@@ -83,7 +83,7 @@ export default async function CveDevicesTable() {
                   <AlertTriangle className="h-4 w-4 text-red-500" />
                   <span className="text-[11px] font-bold text-red-900 font-sans">High Severity Vulnerabilities (CVSS 7.0 - 8.9)</span>
                 </div>
-                <span className="text-[9px] font-extrabold bg-red-50 text-red-650 px-2 py-0.5 rounded-full leading-none border border-red-100">
+                <span className="text-[9px] font-extrabold bg-red-50 text-red-500 px-2 py-0.5 rounded-full leading-none border border-red-100">
                   {highCves.length} Active
                 </span>
               </div>
