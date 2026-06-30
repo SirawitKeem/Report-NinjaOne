@@ -12,13 +12,13 @@ export default async function CveDevicesTable() {
     const highCves = cveMapping.filter(c => c.CVSS_Level === 'High');
     const mediumLowCves = cveMapping.filter(c => c.CVSS_Level === 'Medium' || c.CVSS_Level === 'Low' || c.CVSS_Level === 'None');
 
-    // Slice groups to fit within print height guidelines
-    const displayedCritical = criticalCves.slice(0, 3);
-    const displayedHigh = highCves.slice(0, 3);
-    const displayedMediumLow = mediumLowCves.slice(0, 2);
+    // Slice groups to fit the A4 page height beautifully without overflow
+    const displayedCritical = criticalCves.slice(0, 5);
+    const displayedHigh = highCves.slice(0, 5);
+    const displayedMediumLow = mediumLowCves.slice(0, 4);
 
-    // Get Top 4 vulnerable devices for the Risk Profile section
-    const topDevices = deviceSummary.slice(0, 4);
+    // Get Top 6 vulnerable devices for the Risk Profile section
+    const topDevices = deviceSummary.slice(0, 6);
 
     return (
       <div className="w-full pr-10 mt-4 flex flex-col gap-6 font-sans">
@@ -173,24 +173,24 @@ export default async function CveDevicesTable() {
           </div>
           <div className="overflow-hidden rounded-xl border border-gray-100 bg-white shadow-sm">
             <table className="w-full border-collapse text-left text-xs text-gray-500">
-              <thead className="bg-slate-50 text-[10px] font-bold uppercase text-slate-650">
+              <thead className="bg-slate-50 text-[10px] font-bold uppercase text-slate-655">
                 <tr>
-                  <th scope="col" className="px-4 py-2.5">Device Name</th>
-                  <th scope="col" className="px-4 py-2.5">OS Category</th>
-                  <th scope="col" className="px-4 py-2.5 text-center">Pending Patches</th>
-                  <th scope="col" className="px-4 py-2.5 text-center">Total CVEs</th>
-                  <th scope="col" className="px-4 py-2.5 text-center">Critical CVEs</th>
-                  <th scope="col" className="px-4 py-2.5 text-center">High CVEs</th>
+                  <th scope="col" className="px-5 py-3.5">Device Name</th>
+                  <th scope="col" className="px-5 py-3.5">OS Category</th>
+                  <th scope="col" className="px-5 py-3.5 text-center">Pending Patches</th>
+                  <th scope="col" className="px-5 py-3.5 text-center">Total CVEs</th>
+                  <th scope="col" className="px-5 py-3.5 text-center">Critical CVEs</th>
+                  <th scope="col" className="px-5 py-3.5 text-center">High CVEs</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100 border-t border-gray-100">
                 {topDevices.map((d, index) => (
                   <tr key={d.id || index} className="hover:bg-gray-50/30 transition-colors">
-                    <td className="whitespace-nowrap px-4 py-2.5 font-bold text-slate-900">{d.name}</td>
-                    <td className="whitespace-nowrap px-4 py-2.5 text-slate-605 font-medium">{d.osGroup}</td>
-                    <td className="whitespace-nowrap px-4 py-2.5 text-center font-bold text-slate-700">{d.patchCount}</td>
-                    <td className="whitespace-nowrap px-4 py-2.5 text-center font-extrabold text-red-650">{d.cveCount}</td>
-                    <td className="whitespace-nowrap px-4 py-2.5 text-center font-bold">
+                    <td className="whitespace-nowrap px-5 py-3.5 font-bold text-slate-900">{d.name}</td>
+                    <td className="whitespace-nowrap px-5 py-3.5 text-slate-605 font-medium">{d.osGroup}</td>
+                    <td className="whitespace-nowrap px-5 py-3.5 text-center font-bold text-slate-700">{d.patchCount}</td>
+                    <td className="whitespace-nowrap px-5 py-3.5 text-center font-extrabold text-red-650">{d.cveCount}</td>
+                    <td className="whitespace-nowrap px-5 py-3.5 text-center font-bold">
                       {d.criticalCount > 0 ? (
                         <span className="inline-flex items-center rounded bg-red-100 px-1.5 py-0.5 text-[9px] font-bold text-red-700">
                           {d.criticalCount}
@@ -199,7 +199,7 @@ export default async function CveDevicesTable() {
                         <span className="text-gray-300">-</span>
                       )}
                     </td>
-                    <td className="whitespace-nowrap px-4 py-2.5 text-center font-bold">
+                    <td className="whitespace-nowrap px-5 py-3.5 text-center font-bold">
                       {d.highCount > 0 ? (
                         <span className="inline-flex items-center rounded bg-orange-100 px-1.5 py-0.5 text-[9px] font-bold text-orange-700">
                           {d.highCount}
