@@ -12,13 +12,13 @@ export default async function CveDevicesTable() {
     const highCves = cveMapping.filter(c => c.CVSS_Level === 'High');
     const mediumLowCves = cveMapping.filter(c => c.CVSS_Level === 'Medium' || c.CVSS_Level === 'Low' || c.CVSS_Level === 'None');
 
-    // Slice groups to fit the A4 page height beautifully without overflow
-    const displayedCritical = criticalCves.slice(0, 5);
-    const displayedHigh = highCves.slice(0, 5);
-    const displayedMediumLow = mediumLowCves.slice(0, 4);
+    // Slice groups to fit the A4 page height perfectly without overflow
+    const displayedCritical = criticalCves.slice(0, 3);
+    const displayedHigh = highCves.slice(0, 3);
+    const displayedMediumLow = mediumLowCves.slice(0, 2);
 
-    // Get Top 6 vulnerable devices for the Risk Profile section
-    const topDevices = deviceSummary.slice(0, 6);
+    // Get Top 4 vulnerable devices for the Risk Profile section
+    const topDevices = deviceSummary.slice(0, 4);
 
     return (
       <div className="w-full pr-10 mt-4 flex flex-col gap-6 font-sans">
@@ -26,7 +26,7 @@ export default async function CveDevicesTable() {
         {/* Section A: CVEs Grouped by Severity */}
         <div className="flex flex-col gap-3">
           <div className="flex items-center gap-2">
-            <ShieldAlert className="h-4.5 w-4.5 text-slate-800" />
+            <ShieldAlert className="h-4.5 w-4.5 text-slate-850" />
             <h4 className="text-[13px] font-bold text-slate-900 uppercase tracking-wide">
               Active CVEs Grouped by Severity
             </h4>
@@ -34,14 +34,14 @@ export default async function CveDevicesTable() {
 
           <div className="grid grid-cols-1 gap-3">
             
-            {/* Group 1: Critical (Score 9.0 - 10.0) */}
-            <div className="flex flex-col border-l-4 border-red-500 bg-red-50/15 p-3 rounded-r-xl border border-y-slate-100 border-r-slate-100">
+            {/* Group 1: Critical (Score 9.0 - 10.0) -> Purple/Violet */}
+            <div className="flex flex-col border-l-4 border-purple-600 bg-purple-50/10 p-3 rounded-r-xl border border-y-slate-100 border-r-slate-100">
               <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center gap-2">
-                  <ShieldX className="h-4 w-4 text-red-650" />
-                  <span className="text-[11px] font-bold text-red-800">Critical Severity Vulnerabilities (CVSS 9.0+)</span>
+                  <ShieldX className="h-4 w-4 text-purple-600" />
+                  <span className="text-[11px] font-bold text-purple-900 font-sans">Critical Severity Vulnerabilities (CVSS 9.0+)</span>
                 </div>
-                <span className="text-[9px] font-extrabold bg-red-100 text-red-700 px-2 py-0.5 rounded-full leading-none">
+                <span className="text-[9px] font-extrabold bg-purple-100 text-purple-700 px-2 py-0.5 rounded-full leading-none">
                   {criticalCves.length} Active
                 </span>
               </div>
@@ -49,18 +49,18 @@ export default async function CveDevicesTable() {
               {displayedCritical.length > 0 ? (
                 <div className="flex flex-col gap-1.5">
                   {displayedCritical.map((c, i) => (
-                    <div key={c.CVE_ID || i} className="flex items-center justify-between text-xs py-1 border-b border-red-100/30 last:border-b-0">
+                    <div key={c.CVE_ID || i} className="flex items-center justify-between text-xs py-1 border-b border-purple-100/30 last:border-b-0">
                       <div className="flex items-center gap-2">
                         <span className="font-extrabold text-slate-900">{c.CVE_ID}</span>
-                        <span className="font-extrabold text-red-650 bg-red-50 px-1.5 py-0.5 rounded text-[9px] leading-none">
+                        <span className="font-extrabold text-purple-650 bg-purple-50 px-1.5 py-0.5 rounded text-[9px] leading-none">
                           {c.CVSS_Base_Score?.toFixed(1)}
                         </span>
                       </div>
                       <div className="flex flex-wrap gap-1 items-center justify-end">
                         <span className="text-[9px] text-slate-500 mr-1.5 font-medium">({c.deviceCount} hosts):</span>
                         {c.devices.slice(0, 3).map((dev, idx) => (
-                          <span key={idx} className="inline-flex items-center gap-1 rounded bg-white border border-red-100 px-1.5 py-0.5 text-[9px] font-semibold text-slate-700 leading-none">
-                            <Server className="h-2 w-2 text-slate-400" />
+                          <span key={idx} className="inline-flex items-center gap-1 rounded bg-white border border-purple-100 px-1.5 py-0.5 text-[9px] font-semibold text-slate-700 leading-none">
+                            <Server className="h-2 w-2 text-purple-400" />
                             {dev}
                           </span>
                         ))}
@@ -76,14 +76,14 @@ export default async function CveDevicesTable() {
               )}
             </div>
 
-            {/* Group 2: High (Score 7.0 - 8.9) */}
-            <div className="flex flex-col border-l-4 border-orange-500 bg-orange-50/15 p-3 rounded-r-xl border border-y-slate-100 border-r-slate-100">
+            {/* Group 2: High (Score 7.0 - 8.9) -> Red */}
+            <div className="flex flex-col border-l-4 border-red-500 bg-red-50/10 p-3 rounded-r-xl border border-y-slate-100 border-r-slate-100">
               <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center gap-2">
-                  <AlertTriangle className="h-4 w-4 text-orange-500" />
-                  <span className="text-[11px] font-bold text-orange-800">High Severity Vulnerabilities (CVSS 7.0 - 8.9)</span>
+                  <AlertTriangle className="h-4 w-4 text-red-500" />
+                  <span className="text-[11px] font-bold text-red-900 font-sans">High Severity Vulnerabilities (CVSS 7.0 - 8.9)</span>
                 </div>
-                <span className="text-[9px] font-extrabold bg-orange-100 text-orange-700 px-2 py-0.5 rounded-full leading-none">
+                <span className="text-[9px] font-extrabold bg-red-100 text-red-700 px-2 py-0.5 rounded-full leading-none">
                   {highCves.length} Active
                 </span>
               </div>
@@ -91,18 +91,18 @@ export default async function CveDevicesTable() {
               {displayedHigh.length > 0 ? (
                 <div className="flex flex-col gap-1.5">
                   {displayedHigh.map((c, i) => (
-                    <div key={c.CVE_ID || i} className="flex items-center justify-between text-xs py-1 border-b border-orange-100/30 last:border-b-0">
+                    <div key={c.CVE_ID || i} className="flex items-center justify-between text-xs py-1 border-b border-red-100/30 last:border-b-0">
                       <div className="flex items-center gap-2">
                         <span className="font-extrabold text-slate-900">{c.CVE_ID}</span>
-                        <span className="font-extrabold text-orange-600 bg-orange-50 px-1.5 py-0.5 rounded text-[9px] leading-none">
+                        <span className="font-extrabold text-red-600 bg-red-50 px-1.5 py-0.5 rounded text-[9px] leading-none">
                           {c.CVSS_Base_Score?.toFixed(1)}
                         </span>
                       </div>
                       <div className="flex flex-wrap gap-1 items-center justify-end">
                         <span className="text-[9px] text-slate-500 mr-1.5 font-medium">({c.deviceCount} hosts):</span>
                         {c.devices.slice(0, 3).map((dev, idx) => (
-                          <span key={idx} className="inline-flex items-center gap-1 rounded bg-white border border-orange-100 px-1.5 py-0.5 text-[9px] font-semibold text-slate-700 leading-none">
-                            <Server className="h-2 w-2 text-slate-450" />
+                          <span key={idx} className="inline-flex items-center gap-1 rounded bg-white border border-red-100 px-1.5 py-0.5 text-[9px] font-semibold text-slate-700 leading-none">
+                            <Server className="h-2 w-2 text-red-400" />
                             {dev}
                           </span>
                         ))}
@@ -118,14 +118,14 @@ export default async function CveDevicesTable() {
               )}
             </div>
 
-            {/* Group 3: Medium & Low (Score < 7.0) */}
-            <div className="flex flex-col border-l-4 border-blue-500 bg-blue-50/15 p-3 rounded-r-xl border border-y-slate-100 border-r-slate-100">
+            {/* Group 3: Medium & Low (Score < 7.0) -> Amber */}
+            <div className="flex flex-col border-l-4 border-amber-500 bg-amber-50/10 p-3 rounded-r-xl border border-y-slate-100 border-r-slate-100">
               <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center gap-2">
-                  <Info className="h-4 w-4 text-blue-600" />
-                  <span className="text-[11px] font-bold text-blue-800">Medium & Low Severity Vulnerabilities (CVSS &lt; 7.0)</span>
+                  <Info className="h-4 w-4 text-amber-550" />
+                  <span className="text-[11px] font-bold text-amber-900 font-sans">Medium & Low Severity Vulnerabilities (CVSS &lt; 7.0)</span>
                 </div>
-                <span className="text-[9px] font-extrabold bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full leading-none">
+                <span className="text-[9px] font-extrabold bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full leading-none">
                   {mediumLowCves.length} Active
                 </span>
               </div>
@@ -133,18 +133,18 @@ export default async function CveDevicesTable() {
               {displayedMediumLow.length > 0 ? (
                 <div className="flex flex-col gap-1.5">
                   {displayedMediumLow.map((c, i) => (
-                    <div key={c.CVE_ID || i} className="flex items-center justify-between text-xs py-1 border-b border-blue-100/30 last:border-b-0">
+                    <div key={c.CVE_ID || i} className="flex items-center justify-between text-xs py-1 border-b border-amber-100/30 last:border-b-0">
                       <div className="flex items-center gap-2">
                         <span className="font-extrabold text-slate-900">{c.CVE_ID}</span>
-                        <span className="font-extrabold text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded text-[9px] leading-none">
+                        <span className="font-extrabold text-amber-600 bg-amber-50 px-1.5 py-0.5 rounded text-[9px] leading-none">
                           {c.CVSS_Base_Score?.toFixed(1)}
                         </span>
                       </div>
                       <div className="flex flex-wrap gap-1 items-center justify-end">
                         <span className="text-[9px] text-slate-500 mr-1.5 font-medium">({c.deviceCount} hosts):</span>
                         {c.devices.slice(0, 3).map((dev, idx) => (
-                          <span key={idx} className="inline-flex items-center gap-1 rounded bg-white border border-blue-100 px-1.5 py-0.5 text-[9px] font-semibold text-slate-700 leading-none">
-                            <Server className="h-2 w-2 text-slate-400" />
+                          <span key={idx} className="inline-flex items-center gap-1 rounded bg-white border border-amber-100 px-1.5 py-0.5 text-[9px] font-semibold text-slate-700 leading-none">
+                            <Server className="h-2 w-2 text-amber-400" />
                             {dev}
                           </span>
                         ))}
@@ -175,22 +175,22 @@ export default async function CveDevicesTable() {
             <table className="w-full border-collapse text-left text-xs text-gray-500">
               <thead className="bg-slate-50 text-[10px] font-bold uppercase text-slate-655">
                 <tr>
-                  <th scope="col" className="px-5 py-3.5">Device Name</th>
-                  <th scope="col" className="px-5 py-3.5">OS Category</th>
-                  <th scope="col" className="px-5 py-3.5 text-center">Pending Patches</th>
-                  <th scope="col" className="px-5 py-3.5 text-center">Total CVEs</th>
-                  <th scope="col" className="px-5 py-3.5 text-center">Critical CVEs</th>
-                  <th scope="col" className="px-5 py-3.5 text-center">High CVEs</th>
+                  <th scope="col" className="px-4 py-2.5">Device Name</th>
+                  <th scope="col" className="px-4 py-2.5">OS Category</th>
+                  <th scope="col" className="px-4 py-2.5 text-center">Pending Patches</th>
+                  <th scope="col" className="px-4 py-2.5 text-center">Total CVEs</th>
+                  <th scope="col" className="px-4 py-2.5 text-center">Critical CVEs</th>
+                  <th scope="col" className="px-4 py-2.5 text-center">High CVEs</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100 border-t border-gray-100">
                 {topDevices.map((d, index) => (
                   <tr key={d.id || index} className="hover:bg-gray-50/30 transition-colors">
-                    <td className="whitespace-nowrap px-5 py-3.5 font-bold text-slate-900">{d.name}</td>
-                    <td className="whitespace-nowrap px-5 py-3.5 text-slate-605 font-medium">{d.osGroup}</td>
-                    <td className="whitespace-nowrap px-5 py-3.5 text-center font-bold text-slate-700">{d.patchCount}</td>
-                    <td className="whitespace-nowrap px-5 py-3.5 text-center font-extrabold text-red-650">{d.cveCount}</td>
-                    <td className="whitespace-nowrap px-5 py-3.5 text-center font-bold">
+                    <td className="whitespace-nowrap px-4 py-2.5 font-bold text-slate-900">{d.name}</td>
+                    <td className="whitespace-nowrap px-4 py-2.5 text-slate-605 font-medium">{d.osGroup}</td>
+                    <td className="whitespace-nowrap px-4 py-2.5 text-center font-bold text-slate-700">{d.patchCount}</td>
+                    <td className="whitespace-nowrap px-4 py-2.5 text-center font-extrabold text-red-650">{d.cveCount}</td>
+                    <td className="whitespace-nowrap px-4 py-2.5 text-center font-bold">
                       {d.criticalCount > 0 ? (
                         <span className="inline-flex items-center rounded bg-red-100 px-1.5 py-0.5 text-[9px] font-bold text-red-700">
                           {d.criticalCount}
@@ -199,7 +199,7 @@ export default async function CveDevicesTable() {
                         <span className="text-gray-300">-</span>
                       )}
                     </td>
-                    <td className="whitespace-nowrap px-5 py-3.5 text-center font-bold">
+                    <td className="whitespace-nowrap px-4 py-2.5 text-center font-bold">
                       {d.highCount > 0 ? (
                         <span className="inline-flex items-center rounded bg-orange-100 px-1.5 py-0.5 text-[9px] font-bold text-orange-700">
                           {d.highCount}
