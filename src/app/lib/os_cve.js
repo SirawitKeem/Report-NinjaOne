@@ -235,3 +235,98 @@ export const getCveDeviceMapping = cache(async function getCveDeviceMappingImpl(
   }
 });
 
+export const getDeviceCveSummary = cache(async function getDeviceCveSummaryImpl() {
+  try {
+    const pendingPatches = await getOsPatchesNo();
+    const devices = await getDevicesData();
+    const cveCache = await loadCache();
+
+    // Map deviceId -> device object template
+    const deviceMap = new Map();
+    devices.forEach(d => {
+      deviceMap.set(d.id, {
+        id: d.id,
+        name: d.displayName || d.systemName,
+        osGroup: d.osGroup || 'Windows',
+        patchCount: 0,
+        cveIds: new Set(),
+        criticalCount: 0,
+        highCount: 0
+      });
+    });
+
+    // Populate patch counts and active CVEs per device
+    pendingPatches.forEach(patch => {
+      const deviceId = patch.deviceId;
+      const kb = patch.kbNumber;
+      if (!deviceId) return;
+
+      let dev = deviceMap.get(deviceId);
+      if (!dev) {
+        dev = {
+          id: deviceId,
+          name: `Device #${deviceId}`,
+          osGroup: 'Windows',
+          patchCount: 0,
+          cveIds: new Set(),
+          criticalCount: 0,
+          highCount: 0
+        };
+        deviceMap.set(deviceId, dev);
+      }
+
+      dev.patchCount += 1;
+
+      if (kb && cveCache[kb]) {
+        cveCache[kb].forEach(item => {
+          const cveId = item.cveNumber;
+          if (!cveId) return;
+
+          dev.cveIds.add(cveId);
+
+          // Extract CVSS score to classify severity
+          let baseScore = null;
+          if (item.baseScore) {
+            baseScore = parseFloat(item.baseScore);
+          } else if (item.cvssScoreSets && item.cvssScoreSets.length > 0) {
+            baseScore = parseFloat(item.cvssScoreSets[0].baseScore);
+          }
+
+          if (baseScore === null || isNaN(baseScore)) {
+            const sev = (item.severity || "").toUpperCase();
+            if (sev === "CRITICAL") baseScore = 9.0;
+            else if (sev === "IMPORTANT") baseScore = 7.0;
+            else baseScore = 0.0;
+          }
+
+          if (baseScore >= 9.0) {
+            dev.criticalCount += 1;
+          } else if (baseScore >= 7.0) {
+            dev.highCount += 1;
+          }
+        });
+      }
+    });
+
+    const result = Array.from(deviceMap.values())
+      .map(d => ({
+        id: d.id,
+        name: d.name,
+        osGroup: d.osGroup,
+        patchCount: d.patchCount,
+        cveCount: d.cveIds.size,
+        criticalCount: d.criticalCount,
+        highCount: d.highCount,
+        cves: Array.from(d.cveIds)
+      }))
+      .filter(d => d.patchCount > 0) // Only display active vulnerable devices
+      .sort((a, b) => b.cveCount - a.cveCount || b.patchCount - a.patchCount);
+
+    return result;
+  } catch (error) {
+    console.error("❌ getDeviceCveSummary Error:", error);
+    return [];
+  }
+});
+
+
